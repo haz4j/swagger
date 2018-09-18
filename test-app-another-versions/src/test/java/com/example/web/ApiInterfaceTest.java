@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ApiTest {
+public class ApiInterfaceTest {
 
     @Autowired
     private TestRestTemplate template;

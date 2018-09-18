@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AutoJsonRpcServiceImpl
-public class Impl implements Api {
+public class Impl implements ApiInterface {
 
     @Override
     public Integer save(Integer value){
