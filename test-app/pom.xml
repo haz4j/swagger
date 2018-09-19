@@ -6,7 +6,7 @@
 
     <groupId>com.haz4j</groupId>
     <artifactId>test-app</artifactId>
-    <version>0.0.1.RELEASE</version>
+    <version>0.0.2</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.github.hazard4j</groupId>
             <artifactId>swagger4jsonrpc</artifactId>
-            <version>0.0.1.RELEASE</version>
+            <version>0.0.2</version>
         </dependency>
 
         <dependency>
