@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.haz4j</groupId>
+    <groupId>com.github.haz4j</groupId>
     <artifactId>test-app</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.1</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -34,9 +34,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.hazard4j</groupId>
+            <groupId>com.github.haz4j</groupId>
             <artifactId>swagger4jsonrpc</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.1</version>
         </dependency>
 
         <dependency>

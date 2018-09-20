@@ -4,14 +4,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.hazard4j</groupId>
+    <groupId>com.github.haz4j</groupId>
     <artifactId>swagger4jsonrpc</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.1</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>This project is implementation of swagger for JSON-RPC with Spring Boot.
         It generates UI that helps delelopers test api and share it with colleagues</description>
-    <url>https://github.com/hazard4j/swagger</url>
+    <url>https://github.com/haz4j/swagger</url>
 
     <licenses>
         <license>
@@ -28,9 +28,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/hazard4j/swagger.git</connection>
-        <developerConnection>scm:git:ssh://github.com:hazard4j/swagger.git</developerConnection>
-        <url>http://github.com/hazard4j/swagger/tree/master</url>
+        <connection>scm:git:git://github.com/haz4j/swagger.git</connection>
+        <developerConnection>scm:git:ssh://github.com:haz4j/swagger.git</developerConnection>
+        <url>http://github.com/haz4j/swagger/tree/master</url>
     </scm>
 
     <properties>
