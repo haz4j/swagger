@@ -3,6 +3,9 @@
 ### About
 This project is implementation of [Swagger](https://swagger.io/) for [JSON-RPC](https://www.jsonrpc.org/) with usage of [jsonrpc4j](https://github.com/briandilley/jsonrpc4j)
 
+### Demo project
+Find sources of demo project here: [https://github.com/haz4j/swagger4jsonrpc-demo](https://github.com/haz4j/swagger4jsonrpc-demo)  
+
 ### Usage
 How to add swagger magic to your typical jsonrpc4j application?
 
