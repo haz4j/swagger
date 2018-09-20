@@ -5,6 +5,7 @@ import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,6 +14,7 @@ import java.lang.reflect.*;
 import java.util.Map;
 import java.util.Optional;
 
+@Slf4j
 public class ReflectionUtils {
 
     public static String getJsonRpcParam(Parameter parameter) {
@@ -40,6 +42,7 @@ public class ReflectionUtils {
     }
 
     public static Type getRealType(Map<TypeVariable<?>, Type> typeArguments, Field field) {
+        log.debug("getRealType: typeArguments - " + typeArguments + ", field - " + field);
         Type realType = null;
 
         if (field.toGenericString().contains(" ") && !MapUtils.isEmpty(typeArguments)){
@@ -71,6 +74,8 @@ public class ReflectionUtils {
     }
 
     public static String getPath(Class api) {
+        log.debug("getPath: api" + api);
+
         JsonRpcService jsonRpcService = (JsonRpcService) api.getAnnotation(JsonRpcService.class);
         return Optional.ofNullable(jsonRpcService)
                 .map(JsonRpcService::value)
