@@ -212,7 +212,7 @@ public class JsonGenerator {
 
         validateTypeArgsLength(type, parameterizedType, 2);
         Class keyClass = (Class) parameterizedType.getActualTypeArguments()[0];
-        ParameterizedType valueClass = (ParameterizedType) parameterizedType.getActualTypeArguments()[1];
+        Type valueClass = parameterizedType.getActualTypeArguments()[1];
         String defaultValue = defaultValueOf(keyClass);
         return createNodeForMap(defaultValue, valueClass);
     }
@@ -260,7 +260,7 @@ public class JsonGenerator {
             } else if (type.isArray()) {
                 ObjectNode arrayNode = createArrayNode(type.getComponentType());
                 properties.set(fieldName, arrayNode);
-            } else if (Map.class.isAssignableFrom(entityClass)) {
+            } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
                 ObjectNode mapNode = validateAndCreateNodeForMap(type, parameterizedType);
                 properties.set(fieldName, mapNode);
@@ -303,15 +303,13 @@ public class JsonGenerator {
         return arrayNode;
     }
 
-    private ObjectNode createNodeForMap(String defaultValue, ParameterizedType valueClass) {
+    private ObjectNode createNodeForMap(String defaultValue, Type valueClass) {
         log.debug("createNodeForMap: defaultValue - " + defaultValue + ", valueClass - " + valueClass);
 
         ObjectNode mapNode = mapper.createObjectNode();
         mapNode.put("type", "object");
 
-        Type type = valueClass.getActualTypeArguments()[0]; //entity from file
-
-        ObjectNode arrayNode = createArrayNode(type);
+        ObjectNode arrayNode = createPropertyFor(valueClass, null);
 
         ObjectNode propertiesNode = mapper.createObjectNode();
         propertiesNode.set(defaultValue, arrayNode);
