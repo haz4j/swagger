@@ -95,8 +95,11 @@
       }
     },
     "collection_string": {
-      "type": "object",
-      "properties": {}
+      "type": "array",
+      "items": {
+        "type": "string",
+        "default": "string"
+      }
     }
   }
 }
