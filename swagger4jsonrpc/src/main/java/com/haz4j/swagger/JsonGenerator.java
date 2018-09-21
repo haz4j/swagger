@@ -220,7 +220,7 @@ public class JsonGenerator {
     private void validateTypeArgsLength(Class<?> type, ParameterizedType parameterizedType, int length) {
         log.debug("validateTypeArgsLength: type - " + type + ", parameterizedType - " + parameterizedType + ", length - " + length);
 
-        if (parameterizedType == null || parameterizedType.getActualTypeArguments() == null && parameterizedType.getActualTypeArguments().length != length) {
+        if (parameterizedType == null || parameterizedType.getActualTypeArguments() == null || parameterizedType.getActualTypeArguments().length != length) {
             throw new RuntimeException("Can't find actual type for field" + type);
         }
     }
@@ -292,7 +292,7 @@ public class JsonGenerator {
         arrayNode.put("type", "array");
 
         ObjectNode items;
-        if (Collection.class.isAssignableFrom(type) &&typeArguments != null) {
+        if (Collection.class.isAssignableFrom(type) && typeArguments != null) {
             //TODO: merge with validateAndCreateNodeForCollection
             ArrayList<Type> types = new ArrayList<>(typeArguments.values());
             items = createArrayNode(types.get(0));
