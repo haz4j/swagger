@@ -19,6 +19,6 @@ public interface CollectionApi {
             @JsonRpcError(exception = IllegalArgumentException.class, code = -187)
     })
     @ApiOperation(value = "Save entity")
-    CollectionDto save(@JsonRpcParam(value = "array_dto") CollectionDto collectionDto, @JsonRpcParam(value = "array_dtos") Collection<CollectionDto> collectionDtos);
+    CollectionDto save(@JsonRpcParam(value = "collection_dto") CollectionDto collectionDto, @JsonRpcParam(value = "collection_dtos") Collection<CollectionDto> collectionDtos);
 
 }

@@ -290,7 +290,15 @@ public class JsonGenerator {
 
         ObjectNode arrayNode = mapper.createObjectNode();
         arrayNode.put("type", "array");
-        ObjectNode items = createPropertyFor(type, typeArguments);
+
+        ObjectNode items;
+        if (Collection.class.isAssignableFrom(type) &&typeArguments != null) {
+            //TODO: merge with validateAndCreateNodeForCollection
+            ArrayList<Type> types = new ArrayList<>(typeArguments.values());
+            items = createArrayNode(types.get(0));
+        } else {
+            items = createPropertyFor(type, typeArguments);
+        }
         arrayNode.set("items", items);
         return arrayNode;
     }
