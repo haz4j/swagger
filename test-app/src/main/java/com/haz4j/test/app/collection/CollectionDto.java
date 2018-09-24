@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class CollectionDto {
@@ -24,6 +25,8 @@ public class CollectionDto {
     private List<Entry> entries;
 
     private ArrayList<List<Entry>> entriesOfEntries;
+
+    private Collection<Map<String, String>> stringsMap;
 
     //TODO: collection of collections of objects
 

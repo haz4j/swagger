@@ -308,6 +308,28 @@ public class JsonGenerator {
         if (Collection.class.isAssignableFrom(type) && allTypes.size() > 0) {
             //TODO: merge with validateAndCreateNodeForCollection
             items = createArrayNode(allTypes.get(0), interfaceTypes); //TODO: вот тут хз, может null передавать нужно, я не знаю
+
+        } else if (Map.class.isAssignableFrom(type)) {
+
+            Type type1 = null; //TODO: merge with validateAndCreateNodeForMap
+            try {
+                type1 = allTypes.get(1); //TODO: это полный пздц и это нужно переписать
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            String defaultValue = "default";
+
+            if (type1.getClass().isAssignableFrom(ParameterizedType.class) ||
+                    type1.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+                Type rawType = ((ParameterizedType) type1).getRawType();
+                Type[] actualTypeArguments = ((ParameterizedType) type1).getActualTypeArguments();
+
+                return createNodeForMap(defaultValue, rawType, actualTypeArguments);
+            } else {
+                items = createNodeForMap(defaultValue, allTypes.get(1), null);
+            }
+
         } else {
             items = createPropertyFor(type, genericTypeArguments); //TODO: вот тут хз, может null передавать нужно, я не знаю
         }
@@ -364,10 +386,15 @@ public class JsonGenerator {
     }
 
     private ObjectNode createArrayNode(Type type, Type[] typeArguments) {
+        //TODO: разобраться, а мы прокидываем typeArguments туда-сюда постоянно?
+        //TODO: а тест на map то я написал?
         log.debug("createArrayNode: type - " + type);
 
         ObjectNode arrayNode;
         if (Class.class.isAssignableFrom(type.getClass())) {
+            //TODO: самое тупое, что можно взять аргументы вот таким способом
+//            Map<TypeVariable<?>, Type> innerTypeArguments = TypeUtils.getTypeArguments((ParameterizedType) type);
+
             arrayNode = createNodeForCollection((Class) type, typeArguments, null);
         } else {
             //TODO: понять как сюда попасть и написать комментарий

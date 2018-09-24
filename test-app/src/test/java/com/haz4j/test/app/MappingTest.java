@@ -77,5 +77,6 @@ public class MappingTest {
         assertThat(json, is(("{\"com/haz4j/swagger4jsonrpc\":\"2.0\",\"host\":\"localhost\",\"basePath\":\"/\",\"tags\":[{\"name\":\"enums\",\"description\":\"Api enums\"}],\"paths\":{\"/v1/enums#0\":{\"post\":{\"tags\":[\"enums\"],\"summary\":\"save\",\"description\":\"Save entity\",\"operationId\":\"/v1/enums#0\",\"consumes\":[\"application/json\"],\"produces\":[\"application/json\"],\"parameters\":[{\"in\":\"body\",\"name\":\"JsonRpc\",\"description\":\"JsonRpc\",\"required\":true,\"schema\":{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\",\"format\":\"int64\"},\"jsonrpc\":{\"type\":\"string\",\"description\":\"jsonrpc version\",\"default\":\"2.0\"},\"method\":{\"type\":\"string\",\"example\":\"save\"},\"params\":{\"type\":\"object\",\"properties\":{\"enum_dto\":{\"type\":\"string\",\"enum\":[\"FIRST_VALUE\",\"SECOND_VALUE\"]}}}}}}],\"responses\":{}}}},\"definitions\":{}}")));
     }
 
+    //TODO: map test
 
 }
