@@ -309,10 +309,10 @@ public class JsonGenerator {
         ObjectNode mapNode = mapper.createObjectNode();
         mapNode.put("type", "object");
 
-        ObjectNode arrayNode = createPropertyFor(valueClass, null);
+        ObjectNode valueNode = createPropertyFor((Class)valueClass, null);
 
         ObjectNode propertiesNode = mapper.createObjectNode();
-        propertiesNode.set(defaultValue, arrayNode);
+        propertiesNode.set(defaultValue, valueNode);
         mapNode.set("properties", propertiesNode);
         return mapNode;
     }
