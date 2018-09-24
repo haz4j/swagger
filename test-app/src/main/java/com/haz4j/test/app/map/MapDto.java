@@ -8,13 +8,13 @@ import java.util.Map;
 @Data
 public class MapDto {
 
-//    private String name;
-//
-//    private String value;
+    private String name;
+
+    private String value;
 
     private Map<Integer, Integer> simpleInternalMap;
 
-//    private Map<Integer, List<Integer>> complexInternalMap;
+    private Map<Integer, List<Integer>> complexInternalMap;
 
     //TODO: add raw map
 
