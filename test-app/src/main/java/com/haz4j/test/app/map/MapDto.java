@@ -16,6 +16,10 @@ public class MapDto {
 
     private Map<Integer, List<Integer>> complexInternalMap;
 
+    private Map<Integer, Map<String, Long>> moreComplexInternalMap;
+
+//    private Map<Integer, List<Map<String, Map<Double, Map<Integer, List<String>>>>>> veryComplexInternalMap; должно заканчиваться на entry
+
     //TODO: add raw map
 
 }

@@ -336,9 +336,23 @@ public class JsonGenerator {
 
         ObjectNode valueNode;
 
-        if (Collection.class.isAssignableFrom((Class) valueClass)/* && typeArguments != null*/) {
+        if (Collection.class.isAssignableFrom((Class) valueClass)/* && typeArguments != null*/) { //TODO: add check
             //TODO: merge with validateAndCreateNodeForCollection
             valueNode = createArrayNode(typeArgument[0], null);
+        } else if (Map.class.isAssignableFrom((Class) valueClass)) {
+
+            Type type = typeArgument[0]; //TODO: merge with validateAndCreateNodeForMap
+
+            if (type.getClass().isAssignableFrom(ParameterizedType.class) ||
+                    type.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+                Type rawType = ((ParameterizedType) type).getRawType();
+                Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+
+                return createNodeForMap(defaultValue, rawType, actualTypeArguments);
+            } else {
+                valueNode = createNodeForMap(defaultValue, typeArgument[1], null);
+            }
+
         } else {
             valueNode = createPropertyFor((Class) valueClass, null);
         }
@@ -368,6 +382,10 @@ public class JsonGenerator {
         if (ClassUtils.isPrimitiveOrWrapper(clazz)) {
             return "1";
         }
+        if (clazz.isAssignableFrom(Number.class)) { //TODO: it should be number
+            return "1";
+        }
+
         throw new RuntimeException("Cannot find default value for class" + clazz);
     }
 
