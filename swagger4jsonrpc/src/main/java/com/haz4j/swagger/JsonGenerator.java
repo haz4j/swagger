@@ -305,47 +305,32 @@ public class JsonGenerator {
         arrayNode.put("type", "array");
 
         ObjectNode items;
-        List<Type> allTypes = combineTypes(typeArgumentsArray, typeArgumentsMap);
-        if (Collection.class.isAssignableFrom(type) && allTypes.size() > 0) {
+        if (Collection.class.isAssignableFrom(type) && typeArgumentsArray.length > 0) {
             //TODO: merge with validateAndCreateNodeForCollection
-            items = createArrayNode(allTypes.get(0), typeArgumentsArray); //TODO: вот тут хз, может null передавать нужно, я не знаю
+            items = createArrayNode(typeArgumentsArray[0], typeArgumentsArray);
 
         } else if (Map.class.isAssignableFrom(type)) {
 
-            Type keyClass = allTypes.get(0); //TODO: merge with validateAndCreateNodeForMap
-            Type valueClass = allTypes.get(1); //TODO: merge with validateAndCreateNodeForMap
-            //TODO: это полный пздц и это нужно переписать
+            Type keyClass = typeArgumentsArray[0];
+            Type valueClass = typeArgumentsArray[1];
 
-            String defaultValue = defaultValueOf((Class) keyClass);
+            String nextDefaultValue = defaultValueOf((Class) keyClass);
 
             if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
                     valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
                 Type rawType = ((ParameterizedType) valueClass).getRawType();
                 Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-                items = createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments);
+                items = createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
             } else {
-                items = createNodeForMap(defaultValue, (Class<?>) allTypes.get(1), null);
+                items = createNodeForMap(nextDefaultValue, (Class<?>) valueClass, null);
             }
 
         } else {
-            items = createPropertyFor(type, typeArgumentsMap); //TODO: вот тут хз, может null передавать нужно, я не знаю
+            items = createPropertyFor(type, typeArgumentsMap);
         }
         arrayNode.set("items", items);
         return arrayNode;
-    }
-
-    //TODO: в необходимости этого сомневаюсь
-    private List<Type> combineTypes(Type[] typeArguments, Map<TypeVariable<?>, Type> genericTypeArguments) {
-        List<Type> allTypes = new ArrayList<>();
-        if (genericTypeArguments != null && genericTypeArguments.values() != null && genericTypeArguments.values().size() > 0) {
-            allTypes.addAll(genericTypeArguments.values());
-        }
-
-        if(typeArguments != null && typeArguments.length > 0){
-            allTypes.addAll(Arrays.asList(typeArguments));
-        }
-        return allTypes;
     }
 
     private ObjectNode createNodeForMap(String defaultValue, Class<?> type, Type[] typeArgumentsArray) {
@@ -360,7 +345,7 @@ public class JsonGenerator {
 
         if (Collection.class.isAssignableFrom(type)/* && typeArguments != null*/) { //TODO: add check
             //TODO: merge with validateAndCreateNodeForCollection
-            valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray); //TODO: вот тут хз, может null передавать нужно, я не знаю
+            valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray);
         } else if (Map.class.isAssignableFrom(type)) {
 
             Type keyClass = allTypes.get(0);
@@ -374,7 +359,7 @@ public class JsonGenerator {
 
                 valueNode =  createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
             } else {
-                valueNode = createNodeForMap(nextDefaultValue, (Class<?>) allTypes.get(1), null);
+                valueNode = createNodeForMap(nextDefaultValue, (Class<?>) valueClass, null);
             }
 
         } else {
@@ -389,24 +374,15 @@ public class JsonGenerator {
 
     //type - element of collection
     private ObjectNode createArrayNode(Type type, Type[] typeArgumentsArray) {
-        //TODO: разобраться, а мы прокидываем typeArgumentsArray туда-сюда постоянно?
-        //TODO: а тест на map то я написал?
         log.debug("createArrayNode: type - " + type);
 
         ObjectNode arrayNode;
         if (Class.class.isAssignableFrom(type.getClass())) {
             //string
-            //TODO: самое тупое, что можно взять аргументы вот таким способом
-//            Map<TypeVariable<?>, Type> innerTypeArguments = TypeUtils.getTypeArguments((ParameterizedType) type);
-
             arrayNode = createNodeForCollection((Class) type, typeArgumentsArray, null);
         } else {
             //collection or map
             Class<?> rawType = TypeUtils.getRawType(type, null);
-//            TODO: раскомментировать и подумать
-//            if (typeArgumentsArray != null && typeArgumentsArray.length > 0) {
-//                throw new RuntimeException("may be we should merge args");
-//            }
             //TODO: проверить тип теперь кастингом
             arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments(), null);
         }
