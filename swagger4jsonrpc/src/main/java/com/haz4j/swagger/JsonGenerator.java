@@ -223,9 +223,9 @@ public class JsonGenerator {
             Type rawType = ((ParameterizedType) valueClass).getRawType();
             Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-            return createNodeForMap(defaultValue, rawType, actualTypeArguments);
+            return createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments);
         } else {
-            return createNodeForMap(defaultValue, valueClass, null);
+            return createNodeForMap(defaultValue, (Class<?>) valueClass, null);
         }
     }
 
@@ -323,9 +323,9 @@ public class JsonGenerator {
                 Type rawType = ((ParameterizedType) valueClass).getRawType();
                 Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-                items = createNodeForMap(defaultValue, rawType, actualTypeArguments);
+                items = createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments);
             } else {
-                items = createNodeForMap(defaultValue, allTypes.get(1), null);
+                items = createNodeForMap(defaultValue, (Class<?>) allTypes.get(1), null);
             }
 
         } else {
@@ -348,7 +348,7 @@ public class JsonGenerator {
         return allTypes;
     }
 
-    private ObjectNode createNodeForMap(String defaultValue, Type type, Type[] typeArgumentsArray) {
+    private ObjectNode createNodeForMap(String defaultValue, Class<?> type, Type[] typeArgumentsArray) {
         log.debug("createNodeForMap: defaultValue - " + defaultValue + ", type - " + type);
 
         ObjectNode mapNode = mapper.createObjectNode();
@@ -356,19 +356,12 @@ public class JsonGenerator {
 
         ObjectNode valueNode;
 
-        if (type.getClass().isAssignableFrom(ParameterizedType.class) ||
-                type.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-            Type rawType = ((ParameterizedType) type).getRawType();
-            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
-            System.out.println();
-        }
-
         List<Type> allTypes = typeArgumentsArray == null ? new ArrayList<>() : Arrays.asList(typeArgumentsArray);
 
-        if (Collection.class.isAssignableFrom((Class) type)/* && typeArguments != null*/) { //TODO: add check
+        if (Collection.class.isAssignableFrom(type)/* && typeArguments != null*/) { //TODO: add check
             //TODO: merge with validateAndCreateNodeForCollection
             valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray); //TODO: вот тут хз, может null передавать нужно, я не знаю
-        } else if (Map.class.isAssignableFrom((Class) type)) {
+        } else if (Map.class.isAssignableFrom(type)) {
 
             Type keyClass = allTypes.get(0);
             Type valueClass = allTypes.get(1);
@@ -379,13 +372,13 @@ public class JsonGenerator {
                 Type rawType = ((ParameterizedType) valueClass).getRawType();
                 Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-                valueNode =  createNodeForMap(nextDefaultValue, rawType, actualTypeArguments);
+                valueNode =  createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
             } else {
-                valueNode = createNodeForMap(nextDefaultValue, allTypes.get(1), null);
+                valueNode = createNodeForMap(nextDefaultValue, (Class<?>) allTypes.get(1), null);
             }
 
         } else {
-            valueNode = createPropertyFor((Class) type, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
+            valueNode = createPropertyFor(type, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
         }
 
         ObjectNode propertiesNode = mapper.createObjectNode();
