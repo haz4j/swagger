@@ -20,18 +20,19 @@ public class CollectionDto {
 
     private Collection<Collection<Collection<Integer>>> integersOfIntegersOfIntegers;
 
+    private Collection<Map<String, String>> stringsMap;
+
+    private Collection<Map<String, Collection<String>>> littleCompositeMap;
+
+    private Collection<Map<String, Collection<Map<Integer, Collection<Map<String, Collection<Map<Double, String>>>>>>>> compositeMap;
+
     private Entry entry;
 
     private List<Entry> entries;
 
     private ArrayList<List<Entry>> entriesOfEntries;
 
-    private Collection<Map<String, String>> stringsMap;
-
-    //TODO: collection of collections of objects
-
     //TODO: add raw collection
 
-    //TODO: collection of maps of lists of maps etc
-
+    //TODO: add collection of objects
 }
