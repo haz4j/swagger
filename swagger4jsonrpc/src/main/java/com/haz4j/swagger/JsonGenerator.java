@@ -348,33 +348,44 @@ public class JsonGenerator {
         return allTypes;
     }
 
-    private ObjectNode createNodeForMap(String defaultValue, Type valueClass, Type[] typeArgumentsArray) {
-        log.debug("createNodeForMap: defaultValue - " + defaultValue + ", valueClass - " + valueClass);
+    private ObjectNode createNodeForMap(String defaultValue, Type type, Type[] typeArgumentsArray) {
+        log.debug("createNodeForMap: defaultValue - " + defaultValue + ", type - " + type);
 
         ObjectNode mapNode = mapper.createObjectNode();
         mapNode.put("type", "object");
 
         ObjectNode valueNode;
 
-        if (Collection.class.isAssignableFrom((Class) valueClass)/* && typeArguments != null*/) { //TODO: add check
+        if (type.getClass().isAssignableFrom(ParameterizedType.class) ||
+                type.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+            Type rawType = ((ParameterizedType) type).getRawType();
+            Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            System.out.println();
+        }
+
+        List<Type> allTypes = typeArgumentsArray == null ? new ArrayList<>() : Arrays.asList(typeArgumentsArray);
+
+        if (Collection.class.isAssignableFrom((Class) type)/* && typeArguments != null*/) { //TODO: add check
             //TODO: merge with validateAndCreateNodeForCollection
-            valueNode = createArrayNode(typeArgumentsArray[0], null);
-        } else if (Map.class.isAssignableFrom((Class) valueClass)) {
+            valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray); //TODO: вот тут хз, может null передавать нужно, я не знаю
+        } else if (Map.class.isAssignableFrom((Class) type)) {
 
-            Type type = typeArgumentsArray[0]; //TODO: merge with validateAndCreateNodeForMap
+            Type keyClass = allTypes.get(0);
+            Type valueClass = allTypes.get(1);
+            String nextDefaultValue = defaultValueOf((Class) keyClass);
 
-            if (type.getClass().isAssignableFrom(ParameterizedType.class) ||
-                    type.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-                Type rawType = ((ParameterizedType) type).getRawType();
-                Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+            if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
+                    valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+                Type rawType = ((ParameterizedType) valueClass).getRawType();
+                Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-                return createNodeForMap(defaultValue, rawType, actualTypeArguments);
+                valueNode =  createNodeForMap(nextDefaultValue, rawType, actualTypeArguments);
             } else {
-                valueNode = createNodeForMap(defaultValue, typeArgumentsArray[1], null);
+                valueNode = createNodeForMap(nextDefaultValue, allTypes.get(1), null);
             }
 
         } else {
-            valueNode = createPropertyFor((Class) valueClass, null);
+            valueNode = createPropertyFor((Class) type, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
         }
 
         ObjectNode propertiesNode = mapper.createObjectNode();
@@ -412,9 +423,6 @@ public class JsonGenerator {
     private String defaultValueOf(Class clazz) {
         if (ClassUtils.isPrimitiveOrWrapper(clazz)) {
             return "1";
-        }
-        if (clazz.isAssignableFrom(Number.class)) { //TODO: it should be number
-            return "2";
         }
         if (clazz.isAssignableFrom(String.class)) {
             return "3";
