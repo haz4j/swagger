@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -15,7 +14,6 @@ import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-import sun.reflect.generics.repository.ClassRepository;
 
 import java.lang.reflect.*;
 import java.time.LocalDate;
@@ -202,7 +200,7 @@ public class JsonGenerator {
             if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
                     parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
 
-                List<TypeVariable<?>> typeParams = getTypeParams(type);
+                List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
 
                 Map<String, String> typesMap = toTypesMap(typeParams, signatures);
 
@@ -217,25 +215,13 @@ public class JsonGenerator {
         }
     }
 
-    @SneakyThrows
     private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, List<String> signatures) {
-
         Map<String, String> map = new HashMap();
         for (int i = 0; i < signatures.size(); i++) {
             map.put(typeParams.get(i).getName(), signatures.get(i));
         }
         return map;
     }
-
-    @SneakyThrows
-    private List<TypeVariable<?>> getTypeParams(Class<?> type) {
-        Field f = Class.class.getDeclaredField("genericInfo");
-        f.setAccessible(true);
-        ClassRepository classRepository = (ClassRepository) f.get(type);
-        TypeVariable<?>[] typeParameters = classRepository.getTypeParameters();
-        return Arrays.asList(typeParameters);
-    }
-
 
     //type - collection
     private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType) {
@@ -335,9 +321,9 @@ public class JsonGenerator {
         definitions.put(refName, entityNode);
     }
 
-    private ObjectNode createNodeForCollection(Class<?> type, Type[] typeArgumentsArray, Map<TypeVariable<?>, Type> typeArgumentsMap) {
+    private ObjectNode createNodeForCollection(Class<?> type, Type[] typeArgumentsArray) {
         //TODO: проверить все ли параметры попали в логи
-        log.debug("createNodeForCollection: type - " + type + ", typeArgumentsMap - " + typeArgumentsMap);
+        log.debug("createNodeForCollection: type - " + type + ", typeArgumentsArray - " + typeArgumentsArray);
 
         ObjectNode arrayNode = mapper.createObjectNode();
         arrayNode.put("type", "array");
@@ -417,12 +403,12 @@ public class JsonGenerator {
         ObjectNode arrayNode;
         if (Class.class.isAssignableFrom(type.getClass())) {
             //string
-            arrayNode = createNodeForCollection((Class) type, typeArgumentsArray, null);
+            arrayNode = createNodeForCollection((Class) type, typeArgumentsArray);
         } else {
             //collection or map
             Class<?> rawType = TypeUtils.getRawType(type, null);
             //TODO: проверить тип теперь кастингом
-            arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments(), null);
+            arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments());
         }
         return arrayNode;
     }

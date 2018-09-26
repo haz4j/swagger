@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import sun.reflect.generics.repository.ClassRepository;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -118,6 +119,15 @@ public class ReflectionUtils {
                 .map(path -> path.replace("//", "/"))
                 .orElseThrow(() -> new RuntimeException("Class " + api + " is annotated with @Api " +
                         "and should be annotated @JsonRpcService(value) with non-empty value"));
+    }
+
+    @SneakyThrows
+    public static List<TypeVariable<?>> getTypeParams(Class<?> type) {
+        Field f = Class.class.getDeclaredField("genericInfo");
+        f.setAccessible(true);
+        ClassRepository classRepository = (ClassRepository) f.get(type);
+        TypeVariable<?>[] typeParameters = classRepository.getTypeParameters();
+        return Arrays.asList(typeParameters);
     }
 
     public static Pair<String, String> getTag(Class api) {
