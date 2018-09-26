@@ -340,15 +340,7 @@ public class JsonGenerator {
 
             String nextDefaultValue = defaultValueOf((Class) keyClass);
 
-            if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
-                    valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-                Type rawType = ((ParameterizedType) valueClass).getRawType();
-                Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
-
-                items = createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
-            } else {
-                items = createNodeForMap(nextDefaultValue, (Class<?>) valueClass, null);
-            }
+            items = createNodeForMap(valueClass, nextDefaultValue);
 
         } else {
             items = createPropertyFor(type, null);
@@ -376,15 +368,7 @@ public class JsonGenerator {
             Type valueClass = allTypes.get(1);
             String nextDefaultValue = defaultValueOf((Class) keyClass);
 
-            if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
-                    valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-                Type rawType = ((ParameterizedType) valueClass).getRawType();
-                Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
-
-                valueNode =  createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
-            } else {
-                valueNode = createNodeForMap(nextDefaultValue, (Class<?>) valueClass, null);
-            }
+            valueNode = createNodeForMap(valueClass, nextDefaultValue);
 
         } else {
             valueNode = createPropertyFor(type, null);
@@ -394,6 +378,20 @@ public class JsonGenerator {
         propertiesNode.set(defaultValue, valueNode);
         mapNode.set("properties", propertiesNode);
         return mapNode;
+    }
+
+    private ObjectNode createNodeForMap(Type valueClass, String nextDefaultValue) {
+        ObjectNode items;
+        if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
+                valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+            Type rawType = ((ParameterizedType) valueClass).getRawType();
+            Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
+
+            items = createNodeForMap(nextDefaultValue, (Class<?>) rawType, actualTypeArguments);
+        } else {
+            items = createNodeForMap(nextDefaultValue, (Class<?>) valueClass, null);
+        }
+        return items;
     }
 
     //type - element of collection
