@@ -168,7 +168,12 @@ public class JsonGenerator {
 
         for (int i = 0; i < method.getParameters().length; i++) {
             Parameter parameter = method.getParameters()[i];
-            TypeWrapper signature = signatures.get(i);
+            TypeWrapper signature = null;
+
+            if (signatures.size() > i){
+                signature = signatures.get(i);
+            }
+
             JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, signature);
             String propertyName = ReflectionUtils.getJsonRpcParam(parameter);
             propertiesNode.set(propertyName, paramFromMethodParameter);
@@ -183,17 +188,14 @@ public class JsonGenerator {
 
         Class<?> type = parameter.getType();
 
-        List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
-        Map<String, String> typesMap = toTypesMap(typeParams, signatures);
-
         if (Collection.class.isAssignableFrom(type)) {
 
             ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
-            return validateAndCreateNodeForCollection(type, parameterizedType);
+            return validateAndCreateNodeForCollection(type, parameterizedType, signatures);
 
         } else if (type.isArray()) {
 
-            return createArrayNode(type.getComponentType(), null);
+            return createArrayNode(type.getComponentType(), null, signatures);
 
         } else if (Map.class.isAssignableFrom(type)) {
 
@@ -209,6 +211,9 @@ public class JsonGenerator {
 
                 Type rawType = parameterizedType.getRawType();
 
+                List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
+                Map<String, String> typesMap = toTypesMap(typeParams, signatures);
+
                 return createPropertyFor((Class)rawType, typesMap);
             }
 
@@ -216,22 +221,22 @@ public class JsonGenerator {
         }
     }
 
-    private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper signatures) {
+    private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper typeWrapper) {
         Map<String, String> map = new HashMap();
-        for (int i = 0; i < signatures.getTypeWrappers().size(); i++) {
-            map.put(typeParams.get(i).getName(), signatures.getTypeWrappers().get(i).getName());
+        for (int i = 0; i < typeWrapper.getTypeWrappers().size(); i++) {
+            map.put(typeParams.get(i).getName(), typeWrapper.getTypeWrappers().get(i).getName());
         }
         return map;
     }
 
     //type - collection
-    private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType) {
+    private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType, TypeWrapper typeWrapper) {
         log.debug("validateAndCreateNodeForCollection: type - " + type + ", parameterizedType - " + parameterizedType);
 
         validateTypeArgsLength(type, parameterizedType, 1);
         Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
 
-        return createArrayNode(typeOfCollectionElement, null);
+        return createArrayNode(typeOfCollectionElement, null, typeWrapper);
     }
 
     private ObjectNode validateAndCreateNodeForMap(Class<?> type, ParameterizedType parameterizedType) {
@@ -292,10 +297,10 @@ public class JsonGenerator {
             Class<?> type = field.getType();
             if (Collection.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                ObjectNode arrayNode = validateAndCreateNodeForCollection(type, parameterizedType);
+                ObjectNode arrayNode = validateAndCreateNodeForCollection(type, parameterizedType, null);
                 properties.set(fieldName, arrayNode);
             } else if (type.isArray()) {
-                ObjectNode arrayNode = createArrayNode(type.getComponentType(), null);
+                ObjectNode arrayNode = createArrayNode(type.getComponentType(), null, null);
                 properties.set(fieldName, arrayNode);
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
@@ -322,7 +327,7 @@ public class JsonGenerator {
         definitions.put(refName, entityNode);
     }
 
-    private ObjectNode createNodeForCollection(Class<?> type, Type[] typeArgumentsArray) {
+    private ObjectNode createNodeForCollection(Class<?> type, Type[] typeArgumentsArray, TypeWrapper typeWrapper) {
         //TODO: проверить все ли параметры попали в логи
         log.debug("createNodeForCollection: type - " + type + ", typeArgumentsArray - " + typeArgumentsArray);
 
@@ -332,7 +337,7 @@ public class JsonGenerator {
         ObjectNode items;
         if (Collection.class.isAssignableFrom(type) && typeArgumentsArray.length > 0) {
             //TODO: merge with validateAndCreateNodeForCollection
-            items = createArrayNode(typeArgumentsArray[0], typeArgumentsArray);
+            items = createArrayNode(typeArgumentsArray[0], typeArgumentsArray, typeWrapper);
 
         } else if (Map.class.isAssignableFrom(type)) {
 
@@ -344,7 +349,15 @@ public class JsonGenerator {
             items = createNodeForMap(valueClass, nextDefaultValue);
 
         } else {
-            items = createPropertyFor(type, null);
+            List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
+
+            Map<String, String> typesMap;
+            if (typeWrapper != null){
+                typesMap = toTypesMap(typeParams, typeWrapper.getTypeWrappers().get(0));
+                items = createPropertyFor(type, typesMap);
+            } else {
+                items = createPropertyFor(type, null);
+            }
         }
         arrayNode.set("items", items);
         return arrayNode;
@@ -362,7 +375,7 @@ public class JsonGenerator {
 
         if (Collection.class.isAssignableFrom(type)/* && typeArguments != null*/) { //TODO: add check
             //TODO: merge with validateAndCreateNodeForCollection
-            valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray);
+            valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray, null);
         } else if (Map.class.isAssignableFrom(type)) {
 
             Type keyClass = allTypes.get(0);
@@ -396,18 +409,18 @@ public class JsonGenerator {
     }
 
     //type - element of collection
-    private ObjectNode createArrayNode(Type type, Type[] typeArgumentsArray) {
+    private ObjectNode createArrayNode(Type type, Type[] typeArgumentsArray, TypeWrapper typesMap) {
         log.debug("createArrayNode: type - " + type);
 
         ObjectNode arrayNode;
         if (Class.class.isAssignableFrom(type.getClass())) {
             //string
-            arrayNode = createNodeForCollection((Class) type, typeArgumentsArray);
+            arrayNode = createNodeForCollection((Class) type, typeArgumentsArray, typesMap);
         } else {
             //collection or map
             Class<?> rawType = TypeUtils.getRawType(type, null);
             //TODO: проверить тип теперь кастингом
-            arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments());
+            arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments(), typesMap);
         }
         return arrayNode;
     }

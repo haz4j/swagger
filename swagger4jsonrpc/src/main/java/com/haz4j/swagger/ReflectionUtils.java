@@ -61,6 +61,11 @@ public class ReflectionUtils {
         String className = null;
         try {
             className = actualTypeArguments.get(signature);
+
+            if (className == null) {
+                System.out.println();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -160,6 +165,10 @@ public class ReflectionUtils {
         Field f = Class.class.getDeclaredField("genericInfo");
         f.setAccessible(true);
         ClassRepository classRepository = (ClassRepository) f.get(type);
+        if (classRepository == null){
+            return new ArrayList<>();
+        }
+
         TypeVariable<?>[] typeParameters = classRepository.getTypeParameters();
         return Arrays.asList(typeParameters);
     }
