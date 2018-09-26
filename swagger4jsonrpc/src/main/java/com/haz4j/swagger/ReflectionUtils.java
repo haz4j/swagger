@@ -10,11 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import sun.reflect.generics.parser.SignatureParser;
 import sun.reflect.generics.repository.ClassRepository;
+import sun.reflect.generics.tree.*;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class ReflectionUtils {
@@ -57,7 +58,12 @@ public class ReflectionUtils {
             return null;
         }
 
-        String className = actualTypeArguments.get(signature);
+        String className = null;
+        try {
+            className = actualTypeArguments.get(signature);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return Class.forName(className);
     }
 
@@ -96,18 +102,46 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static List<String> getSignature(Method method) {
-        Field f = Method.class.getDeclaredField("signature");
-        f.setAccessible(true);
-        String signature = (String) f.get(method);
+    public static List<TypeWrapper> getSignature(Method method) {
+
+        Field methodSignature = Method.class.getDeclaredField("signature");
+        methodSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
+
+        Field classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
+        classTypeSignaturePath.setAccessible(true);
+
+        String signature = (String) methodSignature.get(method);
         if (signature == null) {
             return new ArrayList<>();
         }
-        return Arrays.stream(signature.substring(signature.indexOf("<")+1, signature.lastIndexOf(">")-1)
-                .split(";"))
-                .map(s -> s.replaceAll("/", "."))
-                .map(s -> s.substring(1, s.length()))
-                .collect(Collectors.toList());
+        MethodTypeSignature methodTypeSignature = SignatureParser.make().parseMethodSig(signature);
+
+        TypeSignature[] parameterTypes = methodTypeSignature.getParameterTypes();
+        List<TypeWrapper> allSignatures = new ArrayList<>();
+
+        for (TypeSignature parameterType : parameterTypes) {
+            allSignatures.add(toTypeWrapper(parameterType, classTypeSignaturePath));
+        }
+
+        return allSignatures;
+
+    }
+
+    @SneakyThrows
+    private static TypeWrapper toTypeWrapper(TypeSignature parameterType, Field classTypeSignaturePath) {
+        TypeWrapper typeWrapper = new TypeWrapper();
+        ArrayList path = (ArrayList) classTypeSignaturePath.get(parameterType);
+        for (Object o : path) {
+            SimpleClassTypeSignature signature = (SimpleClassTypeSignature) o;
+            typeWrapper.setName(signature.getName());
+            TypeArgument[] typeArguments = signature.getTypeArguments();
+            for (TypeArgument typeArgument : typeArguments) {
+                TypeSignature typeSignature = (TypeSignature) typeArgument;
+                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature, classTypeSignaturePath));
+            }
+        }
+
+        return typeWrapper;
     }
 
     public static String getPath(Class api) {

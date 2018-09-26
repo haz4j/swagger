@@ -16,10 +16,14 @@ public interface GenericApi {
 
     //TODO: write test with complex generics
     //TODO: и сделать, чтобы параметры были не только в методе, а и в сущности и вспомнить какие были дженерики в другом проекте
-    GenericDto save1(@JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto);
+//    GenericDto save1(@JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto);
 
-//    List<GenericDto<Entry>> save2(@JsonRpcParam(value = "generic_dto") List<GenericDto<Entry>> genericDto);
-//
+//    List<GenericDto<Entry1, Entry2, Entry3>> save2(@JsonRpcParam(value = "generic_dto") List<GenericDto<Entry1, Entry2, Entry3>> genericDto);
+    List<GenericDto<Entry3, Entry2, Entry1>> save3(
+            @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto,
+            @JsonRpcParam(value = "generic_dtos") List<GenericDto<Entry3, Entry2, Entry1>> genericDtos
+    );
+
 //    Map<String, GenericDto<Entry>> save3(@JsonRpcParam(value = "generic_dto") Map<String, GenericDto<Entry>> genericDto);
 //
 //    List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry>>>>>>> save4(@JsonRpcParam(value = "generic_dto") List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry>>>>>>> genericDto);

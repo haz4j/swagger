@@ -11,10 +11,24 @@ import java.util.Map;
 @AutoJsonRpcServiceImpl
 public class GenericApiImpl implements GenericApi {
 
+//    @Override
+//    public GenericDto save1(GenericDto<Entry1, Entry2, Entry3> genericDto) {
+//        return genericDto;
+//    }
+
+
+
+//    @Override
+//    public List<GenericDto<Entry1, Entry2, Entry3>> save2(List<GenericDto<Entry1, Entry2, Entry3>> genericDto) {
+//        return genericDto;
+//    }
+
     @Override
-    public GenericDto save1(GenericDto<Entry1, Entry2, Entry3> genericDto) {
-        return genericDto;
+    public List<GenericDto<Entry3, Entry2, Entry1>> save3(GenericDto<Entry1, Entry2, Entry3> genericDto, List<GenericDto<Entry3, Entry2, Entry1>> genericDtos) {
+        return genericDtos;
     }
+
+    //TODO: объеденить методы 1 и 2
 
     //TODO: добавить
     /*
@@ -31,11 +45,8 @@ public class GenericApiImpl implements GenericApi {
     //TODO: добавить вложенные gererics
 
      */
-//
-//    @Override
-//    public List<GenericDto<Entry>> save2(List<GenericDto<Entry>> genericDto) {
-//        return genericDto;
-//    }
+
+
 //
 //    @Override
 //    public Map<String, GenericDto<Entry>> save3(Map<String, GenericDto<Entry>> genericDto) {

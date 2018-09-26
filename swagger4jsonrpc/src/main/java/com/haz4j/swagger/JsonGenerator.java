@@ -164,10 +164,12 @@ public class JsonGenerator {
         definitionNode.put("type", "object");
         ObjectNode propertiesNode = mapper.createObjectNode();
 
-        List<String> signatures = ReflectionUtils.getSignature(method);
+        List<TypeWrapper> signatures = ReflectionUtils.getSignature(method);
 
-        for (Parameter parameter : method.getParameters()) {
-            JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, signatures);
+        for (int i = 0; i < method.getParameters().length; i++) {
+            Parameter parameter = method.getParameters()[i];
+            TypeWrapper signature = signatures.get(i);
+            JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, signature);
             String propertyName = ReflectionUtils.getJsonRpcParam(parameter);
             propertiesNode.set(propertyName, paramFromMethodParameter);
         }
@@ -176,10 +178,13 @@ public class JsonGenerator {
         return definitionNode;
     }
 
-    private JsonNode createParamFromMethodParameter(Parameter parameter, List<String> signatures) {
+    private JsonNode createParamFromMethodParameter(Parameter parameter, TypeWrapper signatures) {
         log.debug("createParamFromMethodParameter - " + parameter);
 
         Class<?> type = parameter.getType();
+
+        List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
+        Map<String, String> typesMap = toTypesMap(typeParams, signatures);
 
         if (Collection.class.isAssignableFrom(type)) {
 
@@ -200,10 +205,6 @@ public class JsonGenerator {
             if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
                     parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
 
-                List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
-
-                Map<String, String> typesMap = toTypesMap(typeParams, signatures);
-
                 ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
 
                 Type rawType = parameterizedType.getRawType();
@@ -215,10 +216,10 @@ public class JsonGenerator {
         }
     }
 
-    private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, List<String> signatures) {
+    private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper signatures) {
         Map<String, String> map = new HashMap();
-        for (int i = 0; i < signatures.size(); i++) {
-            map.put(typeParams.get(i).getName(), signatures.get(i));
+        for (int i = 0; i < signatures.getTypeWrappers().size(); i++) {
+            map.put(typeParams.get(i).getName(), signatures.getTypeWrappers().get(i).getName());
         }
         return map;
     }
