@@ -6,19 +6,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
+import sun.reflect.generics.repository.ClassRepository;
 
 import java.lang.reflect.*;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Component
 @Slf4j
@@ -163,8 +167,10 @@ public class JsonGenerator {
         definitionNode.put("type", "object");
         ObjectNode propertiesNode = mapper.createObjectNode();
 
+        List<String> signatures = ReflectionUtils.getSignature(method);
+
         for (Parameter parameter : method.getParameters()) {
-            JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter);
+            JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, signatures);
             String propertyName = ReflectionUtils.getJsonRpcParam(parameter);
             propertiesNode.set(propertyName, paramFromMethodParameter);
         }
@@ -173,7 +179,7 @@ public class JsonGenerator {
         return definitionNode;
     }
 
-    private JsonNode createParamFromMethodParameter(Parameter parameter) {
+    private JsonNode createParamFromMethodParameter(Parameter parameter, List<String> signatures) {
         log.debug("createParamFromMethodParameter - " + parameter);
 
         Class<?> type = parameter.getType();
@@ -194,10 +200,47 @@ public class JsonGenerator {
 
         } else {
 
-            return createPropertyFor(type, null);
+            if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
+                    parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
 
+
+                List<TypeVariable<?>> typeParams = getTypeParams(type);
+
+                Map<String, String> typesMap = toTypesMap(typeParams, signatures);
+
+
+                ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+
+
+                Type rawType = parameterizedType.getRawType();
+
+                return createPropertyFor((Class)rawType, typesMap, null);
+            }
+
+
+            return createPropertyFor(type, null, null);
         }
     }
+
+    @SneakyThrows
+    private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, List<String> signatures) {
+
+        Map<String, String> map = new HashMap();
+        for (int i = 0; i < signatures.size(); i++) {
+            map.put(typeParams.get(i).getName(), signatures.get(i));
+        }
+        return map;
+    }
+
+    @SneakyThrows
+    private List<TypeVariable<?>> getTypeParams(Class<?> type) {
+        Field f = Class.class.getDeclaredField("genericInfo");
+        f.setAccessible(true);
+        ClassRepository classRepository = (ClassRepository) f.get(type);
+        TypeVariable<?>[] typeParameters = classRepository.getTypeParameters();
+        return Arrays.asList(typeParameters);
+    }
+
 
     //type - collection
     private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType) {
@@ -237,10 +280,10 @@ public class JsonGenerator {
         }
     }
 
-    private void createEntityDefinition(Class<?> entityClass, Map<TypeVariable<?>, Type> typeArguments) {
+    private void createEntityDefinition(Class<?> entityClass, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("createEntityDefinition: entityClass - " + entityClass + ", typeArguments - " + typeArguments);
 
-        String refName = getRefName(entityClass, typeArguments);
+        String refName = getRefName(entityClass, actualTypeArguments, typeArguments);
 
         if (definitions.get(refName) != null) {
             return;
@@ -280,14 +323,14 @@ public class JsonGenerator {
                 //field class has no suitable api and I don't wont to use reflection here
                 //so we will parse string like "private T ru.nic.rates.core.domain.entity.EntityFromFile.entity"
                 //to check if this field has generic
-                Type realType = ReflectionUtils.getRealType(typeArguments, field);
+                Class realType = ReflectionUtils.getRealType(field, actualTypeArguments, typeArguments);
 
                 ObjectNode property;
                 if (realType != null) {
                     Class<?> realTypeClass = TypeUtils.getRawType(realType, null);
-                    property = createPropertyFor(realTypeClass, null);
+                    property = createPropertyFor(realTypeClass, null, null);
                 } else {
-                    property = createPropertyFor(type, null);
+                    property = createPropertyFor(type, null, null);
                 }
 
                 properties.set(fieldName, property);
@@ -327,7 +370,7 @@ public class JsonGenerator {
             }
 
         } else {
-            items = createPropertyFor(type, typeArgumentsMap);
+            items = createPropertyFor(type, null, typeArgumentsMap);
         }
         arrayNode.set("items", items);
         return arrayNode;
@@ -363,7 +406,7 @@ public class JsonGenerator {
             }
 
         } else {
-            valueNode = createPropertyFor(type, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
+            valueNode = createPropertyFor(type, null, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
         }
 
         ObjectNode propertiesNode = mapper.createObjectNode();
@@ -404,7 +447,12 @@ public class JsonGenerator {
     }
 
     @SuppressWarnings("unchecked")
-    private ObjectNode createPropertyFor(Class<?> type, Map<TypeVariable<?>, Type> typeArguments) {
+    private ObjectNode createPropertyFor(Class<?> type, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
+
+        if (typeArguments != null) {
+            throw new RuntimeException("it should be deleted");
+        }
+
         log.debug("createPropertyFor: type - " + type + ", typeArguments - " + typeArguments);
 
         if (ClassUtils.isPrimitiveOrWrapper(type)) {
@@ -420,8 +468,8 @@ public class JsonGenerator {
             return propertyOfEnumNode((Class<? extends Enum>)type);
         }
         ObjectNode property = mapper.createObjectNode();
-        createEntityDefinition(type, typeArguments);
-        property.put("$ref", "#/definitions/" + getRefName(type, typeArguments));
+        createEntityDefinition(type, actualTypeArguments, typeArguments);
+        property.put("$ref", "#/definitions/" + getRefName(type, actualTypeArguments, typeArguments));
         return property;
     }
 
@@ -476,10 +524,23 @@ public class JsonGenerator {
         return (s.replaceAll(regex, replacement).toLowerCase());
     }
 
-    private static String getRefName(Class<?> entityClass, Map<TypeVariable<?>, Type> typeArguments) {
+    private static String getRefName(Class<?> entityClass, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("getRefName: entityClass - " + entityClass + ", typeArguments - " + typeArguments);
 
         String refName = toUnderscore(entityClass.getSimpleName());
+
+        if (!MapUtils.isEmpty(actualTypeArguments)) {
+            refName = refName +"_"+ actualTypeArguments
+                    .values()
+                    .stream()
+                    .map(s -> {
+                        List<String> strings = Arrays.asList(s.split("\\."));
+                        return strings.get(strings.size() -1);
+                    })
+                    .map(s -> toUnderscore(toSimpleName(s)))
+                    .collect(Collectors.joining("_"));
+        }
+
         if (!MapUtils.isEmpty(typeArguments)) {
             refName = refName +"_"+ typeArguments
                     .values()

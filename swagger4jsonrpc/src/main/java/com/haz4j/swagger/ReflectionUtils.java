@@ -5,14 +5,15 @@ import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.reflect.*;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ReflectionUtils {
@@ -41,15 +42,35 @@ public class ReflectionUtils {
         return field.getName();
     }
 
-    public static Type getRealType(Map<TypeVariable<?>, Type> typeArguments, Field field) {
+    @SneakyThrows
+    public static Class getRealType(Field field, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("getRealType: typeArguments - " + typeArguments + ", field - " + field);
-        Type realType = null;
 
-        if (field.toGenericString().contains(" ") && !MapUtils.isEmpty(typeArguments)){
+        if (field.toGenericString().contains(" ") && !MapUtils.isEmpty(typeArguments)) {
             String realTypeName = field.toGenericString().split(" ")[1];
-            realType = getFromMap(typeArguments, realTypeName);
+            return (Class) getFromMap(typeArguments, realTypeName);
         }
-        return realType;
+
+        String signature = ReflectionUtils.getSignature(field);
+        if (signature == null) {
+            return null;
+        }
+
+        String className = actualTypeArguments.get(signature);
+        return Class.forName(className);
+    }
+
+    @SneakyThrows
+    public static String getSignature(Field field) {
+        Field f = Field.class.getDeclaredField("signature");
+        f.setAccessible(true);
+        String signature = (String) f.get(field); //for "R" it will be "TR;"
+        if (signature != null) {
+            return signature.substring(1, signature.length()-1);
+        } else{
+            return null;
+        }
+
     }
 
     private static Type getFromMap(Map<TypeVariable<?>, Type> typeArguments, String realTypeName) {
@@ -71,6 +92,21 @@ public class ReflectionUtils {
             description = apiOperation.value();
         }
         return description;
+    }
+
+    @SneakyThrows
+    public static List<String> getSignature(Method method) {
+        Field f = Method.class.getDeclaredField("signature");
+        f.setAccessible(true);
+        String signature = (String) f.get(method);
+        if (signature == null) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(signature.substring(signature.indexOf("<")+1, signature.lastIndexOf(">")-1)
+                .split(";"))
+                .map(s -> s.replaceAll("/", "."))
+                .map(s -> s.substring(1, s.length()))
+                .collect(Collectors.toList());
     }
 
     public static String getPath(Class api) {
