@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
@@ -203,22 +202,18 @@ public class JsonGenerator {
             if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
                     parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
 
-
                 List<TypeVariable<?>> typeParams = getTypeParams(type);
 
                 Map<String, String> typesMap = toTypesMap(typeParams, signatures);
 
-
                 ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
-
 
                 Type rawType = parameterizedType.getRawType();
 
-                return createPropertyFor((Class)rawType, typesMap, null);
+                return createPropertyFor((Class)rawType, typesMap);
             }
 
-
-            return createPropertyFor(type, null, null);
+            return createPropertyFor(type, null);
         }
     }
 
@@ -328,9 +323,9 @@ public class JsonGenerator {
                 ObjectNode property;
                 if (realType != null) {
                     Class<?> realTypeClass = TypeUtils.getRawType(realType, null);
-                    property = createPropertyFor(realTypeClass, null, null);
+                    property = createPropertyFor(realTypeClass, null);
                 } else {
-                    property = createPropertyFor(type, null, null);
+                    property = createPropertyFor(type, null);
                 }
 
                 properties.set(fieldName, property);
@@ -370,7 +365,7 @@ public class JsonGenerator {
             }
 
         } else {
-            items = createPropertyFor(type, null, typeArgumentsMap);
+            items = createPropertyFor(type, null);
         }
         arrayNode.set("items", items);
         return arrayNode;
@@ -406,7 +401,7 @@ public class JsonGenerator {
             }
 
         } else {
-            valueNode = createPropertyFor(type, null, null);  //TODO: вот тут хз, может null передавать нужно, я не знаю
+            valueNode = createPropertyFor(type, null);
         }
 
         ObjectNode propertiesNode = mapper.createObjectNode();
@@ -447,13 +442,9 @@ public class JsonGenerator {
     }
 
     @SuppressWarnings("unchecked")
-    private ObjectNode createPropertyFor(Class<?> type, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
+    private ObjectNode createPropertyFor(Class<?> type, Map<String, String> actualTypeArguments) {
 
-        if (typeArguments != null) {
-            throw new RuntimeException("it should be deleted");
-        }
-
-        log.debug("createPropertyFor: type - " + type + ", typeArguments - " + typeArguments);
+        log.debug("createPropertyFor: type - " + type + ", actualTypeArguments - " + actualTypeArguments);
 
         if (ClassUtils.isPrimitiveOrWrapper(type)) {
             return propertyOfLongNode();
@@ -468,8 +459,8 @@ public class JsonGenerator {
             return propertyOfEnumNode((Class<? extends Enum>)type);
         }
         ObjectNode property = mapper.createObjectNode();
-        createEntityDefinition(type, actualTypeArguments, typeArguments);
-        property.put("$ref", "#/definitions/" + getRefName(type, actualTypeArguments, typeArguments));
+        createEntityDefinition(type, actualTypeArguments, null);
+        property.put("$ref", "#/definitions/" + getRefName(type, actualTypeArguments, null));
         return property;
     }
 
