@@ -3,6 +3,7 @@ package com.haz4j.swagger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
+import com.haz4j.swagger.structure.MethodStruct;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
@@ -107,6 +108,7 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
+    //TODO: rename method to getTypeWrappers
     public static List<TypeWrapper> getSignature(Method method) {
 
         Field methodSignature = Method.class.getDeclaredField("signature");
@@ -181,5 +183,9 @@ public class ReflectionUtils {
             return Pair.of(tagName, tagValue);
         }
         return Pair.of("default", "");
+    }
+
+    public static List<TypeWrapper> getSignature(MethodStruct method) {
+        return null;
     }
 }

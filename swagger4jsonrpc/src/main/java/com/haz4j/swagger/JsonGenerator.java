@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.haz4j.swagger.structure.ClassStruct;
+import com.haz4j.swagger.structure.MethodStruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -30,7 +31,7 @@ public class JsonGenerator {
 
     private Map<String, JsonNode> definitions;
 
-    public String createJson(String hostName, Map<ClassStruct, Map<Method, List<Parameter>>> apiMap) {
+    public String createJson(String hostName, Map<ClassStruct, Map<MethodStruct, List<Parameter>>> apiMap) {
 
         definitions = new HashMap<>();
 
@@ -53,8 +54,8 @@ public class JsonGenerator {
 
             int i = 0;
 
-            for (Map.Entry<Method, List<Parameter>> entry : methods.entrySet()) {
-                Method method = entry.getKey();
+            for (Map.Entry<MethodStruct, List<Parameter>> entry : methods.entrySet()) {
+                MethodStruct method = entry.getKey();
                 log.debug("method = " + method);
 
                 ObjectNode apiNode = mapper.createObjectNode();
@@ -81,11 +82,11 @@ public class JsonGenerator {
         }
     }
 
-    private ObjectNode createMethod(String tagName, Method method, String operationId) {
+    private ObjectNode createMethod(String tagName, MethodStruct method, String operationId) {
         log.debug("createMethod - " + method);
         ObjectNode objectNode = mapper.createObjectNode();
 
-        String description = ReflectionUtils.getDescription(method);
+        String description = method.getDescription();
 
         ArrayNode tagsNode = mapper.createArrayNode();
         tagsNode.add(tagName);
@@ -121,7 +122,7 @@ public class JsonGenerator {
 
 
     //generate method scheme with links to entities definitions
-    private ObjectNode createMethodScheme(Method method) {
+    private ObjectNode createMethodScheme(MethodStruct method) {
         log.debug("createMethodScheme - " + method);
 
         ObjectNode definitionNode = mapper.createObjectNode();
@@ -154,7 +155,7 @@ public class JsonGenerator {
         return definitionNode;
     }
 
-    private ObjectNode createEntityRef(Method method) {
+    private ObjectNode createEntityRef(MethodStruct method) {
         log.debug("createEntityRef - " + method);
 
         if ((method.getParameters().length == 0)) {
@@ -165,7 +166,7 @@ public class JsonGenerator {
         definitionNode.put("type", "object");
         ObjectNode propertiesNode = mapper.createObjectNode();
 
-        List<TypeWrapper> typeWrappers = ReflectionUtils.getSignature(method);
+        List<TypeWrapper> typeWrappers = method.getSignature();
 
         for (int i = 0; i < method.getParameters().length; i++) {
             Parameter parameter = method.getParameters()[i];
