@@ -26,7 +26,7 @@ pom.xml: add swagger annotations and swagger4jsonrpc
         <dependency>
             <groupId>com.github.haz4j</groupId>
             <artifactId>swagger4jsonrpc</artifactId>
-            <version>0.0.1.RELEASE</version>
+            <version>0.0.2</version>
         </dependency>
     </dependencies>
 ```
