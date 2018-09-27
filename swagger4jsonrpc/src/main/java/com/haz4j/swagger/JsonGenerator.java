@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.haz4j.swagger.structure.ClassStruct;
 import com.haz4j.swagger.structure.MethodStruct;
+import com.haz4j.swagger.structure.ParameterStruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -31,7 +32,7 @@ public class JsonGenerator {
 
     private Map<String, JsonNode> definitions;
 
-    public String createJson(String hostName, Map<ClassStruct, Map<MethodStruct, List<Parameter>>> apiMap) {
+    public String createJson(String hostName, Map<ClassStruct, List<MethodStruct>> apiMap) {
 
         definitions = new HashMap<>();
 
@@ -54,8 +55,8 @@ public class JsonGenerator {
 
             int i = 0;
 
-            for (Map.Entry<MethodStruct, List<Parameter>> entry : methods.entrySet()) {
-                MethodStruct method = entry.getKey();
+
+            for (MethodStruct method : methods) {
                 log.debug("method = " + method);
 
                 ObjectNode apiNode = mapper.createObjectNode();
