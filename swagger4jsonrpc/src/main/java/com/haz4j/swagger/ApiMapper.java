@@ -3,9 +3,11 @@ package com.haz4j.swagger;
 import com.haz4j.swagger.structure.ClassStruct;
 import com.haz4j.swagger.structure.MethodStruct;
 import com.haz4j.swagger.structure.ParameterStruct;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,27 +27,45 @@ public class ApiMapper {
 
     private static List<MethodStruct> toStructMethod(Map<Method, List<Parameter>> methodMap) {
         List<MethodStruct> structList = new ArrayList<>();
-
         for (Map.Entry<Method, List<Parameter>> entry : methodMap.entrySet()) {
             structList.add(toStruct(entry.getKey()));
         }
-
         return structList;
     }
 
     private static MethodStruct toStruct(Method method) {
-        MethodStruct methodStruct = new MethodStruct();
-        methodStruct.setDescription(ReflectionUtils.getDescription(method));
-        methodStruct.setName(method.getName());
-        methodStruct.setParameters(method.getParameters());
-        methodStruct.setSignature(ReflectionUtils.getSignature(method));
-        return methodStruct;
+        MethodStruct struct = new MethodStruct();
+        struct.setDescription(ReflectionUtils.getDescription(method));
+        struct.setName(method.getName());
+        struct.setParameters(toStruct(method.getParameters()));
+        struct.setSignature(ReflectionUtils.getSignature(method));
+        return struct;
+    }
+
+    private static List<ParameterStruct> toStruct(Parameter[] parameters) {
+        ArrayList<ParameterStruct> parameterStructs = new ArrayList<>();
+        for (Parameter parameter : parameters) {
+            parameterStructs.add(toStruct(parameter));
+        }
+        return parameterStructs;
+    }
+
+    private static ParameterStruct toStruct(Parameter parameter) {
+        ParameterStruct struct = new ParameterStruct();
+        struct.setType(parameter.getType());
+
+        if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
+                parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+            struct.setParameterizedType((ParameterizedType) parameter.getParameterizedType());
+        }
+        struct.setPropertyName(ReflectionUtils.getJsonRpcParam(parameter));
+        return struct;
     }
 
     public static ClassStruct toStruct(Class api){
-        ClassStruct classStruct = new ClassStruct();
-        classStruct.setTag(ReflectionUtils.getTag(api));
-        classStruct.setPath(ReflectionUtils.getPath(api));
-        return classStruct;
+        ClassStruct struct = new ClassStruct();
+        struct.setTag(ReflectionUtils.getTag(api));
+        struct.setPath(ReflectionUtils.getPath(api));
+        return struct;
     }
 }

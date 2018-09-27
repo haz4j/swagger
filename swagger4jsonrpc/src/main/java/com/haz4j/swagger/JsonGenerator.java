@@ -147,7 +147,7 @@ public class JsonGenerator {
         methodNode.put("example", method.getName());
         propertiesNode.set("method", methodNode);
 
-        if ((method.getParameters().length > 0)) {
+        if ((method.getParameters().size() > 0)) {
             ObjectNode schemaNode = createEntityRef(method);
             propertiesNode.set("params", schemaNode);
         }
@@ -159,7 +159,7 @@ public class JsonGenerator {
     private ObjectNode createEntityRef(MethodStruct method) {
         log.debug("createEntityRef - " + method);
 
-        if ((method.getParameters().length == 0)) {
+        if ((method.getParameters().size() == 0)) {
             return null;
         }
 
@@ -169,8 +169,8 @@ public class JsonGenerator {
 
         List<TypeWrapper> typeWrappers = method.getSignature();
 
-        for (int i = 0; i < method.getParameters().length; i++) {
-            Parameter parameter = method.getParameters()[i];
+        for (int i = 0; i < method.getParameters().size(); i++) {
+            ParameterStruct parameter = method.getParameters().get(i);
             TypeWrapper typeWrapper = null;
 
             if (typeWrappers.size() > i) {
@@ -178,7 +178,7 @@ public class JsonGenerator {
             }
 
             JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, typeWrapper);
-            String propertyName = ReflectionUtils.getJsonRpcParam(parameter);
+            String propertyName = parameter.getPropertyName();
             propertiesNode.set(propertyName, paramFromMethodParameter);
         }
 
@@ -186,14 +186,14 @@ public class JsonGenerator {
         return definitionNode;
     }
 
-    private JsonNode createParamFromMethodParameter(Parameter parameter, TypeWrapper typeWrapper) {
+    private JsonNode createParamFromMethodParameter(ParameterStruct parameter, TypeWrapper typeWrapper) {
         log.debug("createParamFromMethodParameter - " + parameter);
 
         Class<?> type = parameter.getType();
 
         if (Collection.class.isAssignableFrom(type)) {
 
-            ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+            ParameterizedType parameterizedType = parameter.getParameterizedType();
             return validateAndCreateNodeForCollection(type, parameterizedType, typeWrapper);
 
         } else if (type.isArray()) {
@@ -202,15 +202,13 @@ public class JsonGenerator {
 
         } else if (Map.class.isAssignableFrom(type)) {
 
-            ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+            ParameterizedType parameterizedType = parameter.getParameterizedType();
             return validateAndCreateNodeForMap(type, parameterizedType, typeWrapper);
 
         } else {
 
-            if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
-                    parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-
-                ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+            if (parameter.getParameterizedType() != null) {
+                ParameterizedType parameterizedType = parameter.getParameterizedType();
 
                 Type rawType = parameterizedType.getRawType();
 
