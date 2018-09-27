@@ -6,7 +6,7 @@
 
     <groupId>com.github.haz4j</groupId>
     <artifactId>swagger4jsonrpc</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>This project is implementation of swagger for JSON-RPC with Spring Boot.
