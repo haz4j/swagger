@@ -1,5 +1,6 @@
 package com.haz4j.swagger;
 
+import com.haz4j.swagger.structure.ClassStruct;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -59,11 +60,13 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
 
                 Map<Class, Map<Method, List<Parameter>>> apiMap = getClassMapMap(apis, docket.getPathMapping());
 
+                Map<ClassStruct, Map<Method, List<Parameter>>> apiStructMap = ApiMapper.toStruct(apiMap);
+
                 String hostName = Optional
                         .ofNullable(docket.getHost())
                         .orElse("host_placeholder");
 
-                jsons.add(jsonGenerator.createJson(hostName, apiMap));
+                jsons.add(jsonGenerator.createJson(hostName, apiStructMap));
             }
 
             return jsons.get(0);

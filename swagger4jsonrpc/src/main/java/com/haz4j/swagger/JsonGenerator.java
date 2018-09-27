@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.haz4j.swagger.structure.ClassStruct;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -30,7 +30,7 @@ public class JsonGenerator {
 
     private Map<String, JsonNode> definitions;
 
-    public String createJson(String hostName, Map<Class, Map<Method, List<Parameter>>> apiMap) {
+    public String createJson(String hostName, Map<ClassStruct, Map<Method, List<Parameter>>> apiMap) {
 
         definitions = new HashMap<>();
 
@@ -44,12 +44,12 @@ public class JsonGenerator {
             log.debug("api = " + api);
 
             ObjectNode tagNode = mapper.createObjectNode();
-            Pair<String, String> tag = ReflectionUtils.getTag(api);
+            Pair<String, String> tag = api.getTag();
             tagNode.put("name", tag.getLeft());
             tagNode.put("description", tag.getRight());
             tagsArray.add(tagNode);
 
-            String path = ReflectionUtils.getPath(api);
+            String path = api.getPath();
 
             int i = 0;
 
