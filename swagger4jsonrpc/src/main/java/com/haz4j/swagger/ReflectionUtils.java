@@ -45,7 +45,7 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static Class getRealType(Field field, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
+    public static Class getRealType(Field field, Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("getRealType: typeArguments - " + typeArguments + ", field - " + field);
 
         if (field.toGenericString().contains(" ") && !MapUtils.isEmpty(typeArguments)) {
@@ -60,7 +60,7 @@ public class ReflectionUtils {
 
         String className = null;
         try {
-            className = actualTypeArguments.get(signature);
+            className = genericTypeArgs.get(signature);
 
             if (className == null) {
                 System.out.println();

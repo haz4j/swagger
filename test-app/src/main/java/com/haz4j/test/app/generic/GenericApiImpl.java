@@ -26,6 +26,16 @@ public class GenericApiImpl implements GenericApi {
         return genericDtos;
     }
 
+    @Override
+    public Map<String, GenericDto<Entry1, Entry2, Entry1>> save4(Map<String, GenericDto<Entry1, Entry2, Entry1>> genericDto) {
+        return genericDto;
+    }
+
+//    @Override
+//    public List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto) {
+//        return genericDto;
+//    }
+
     //TODO: добавить
     /*
     @Override
@@ -43,14 +53,5 @@ public class GenericApiImpl implements GenericApi {
      */
 
 
-//
-//    @Override
-//    public Map<String, GenericDto<Entry>> save3(Map<String, GenericDto<Entry>> genericDto) {
-//        return genericDto;
-//    }
-//
-//    @Override
-//    public List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry>>>>>>>  save4(List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry>>>>>>> genericDto) {
-//        return genericDto;
-//    }
+
 }
