@@ -171,7 +171,7 @@ public class JsonGenerator {
             Parameter parameter = method.getParameters()[i];
             TypeWrapper typeWrapper = null;
 
-            if (typeWrappers.size() > i){
+            if (typeWrappers.size() > i) {
                 typeWrapper = typeWrappers.get(i);
             }
 
@@ -215,7 +215,7 @@ public class JsonGenerator {
                 List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
                 Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
 
-                return createPropertyFor((Class)rawType, typesMap);
+                return createPropertyFor((Class) rawType, typesMap);
             }
 
             //TODO: а вот сюда тоже по уму должен typeWrapper передаваться
@@ -224,6 +224,10 @@ public class JsonGenerator {
     }
 
     private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper typeWrapper) {
+        if (typeWrapper == null) {
+            return new HashMap<>();
+        }
+
         Map<String, String> map = new HashMap();
         for (int i = 0; i < typeWrapper.getTypeWrappers().size(); i++) {
             map.put(typeParams.get(i).getName(), typeWrapper.getTypeWrappers().get(i).getName());
@@ -232,6 +236,7 @@ public class JsonGenerator {
     }
 
     //type - collection
+    //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
     private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType, TypeWrapper typeWrapper) {
         log.debug("validateAndCreateNodeForCollection: type - " + type + ", parameterizedType - " + parameterizedType);
 
@@ -239,13 +244,14 @@ public class JsonGenerator {
         Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
 
         TypeWrapper childTypeWrapper = null;
-        if (typeWrapper != null){
+        if (typeWrapper != null) {
             childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
         }
 
         return createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
     }
 
+    //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
     private ObjectNode validateAndCreateNodeForMap(Class<?> type, ParameterizedType parameterizedType, TypeWrapper typeWrapper) {
         log.debug("validateAndCreateNodeForMap: type - " + type + ", parameterizedType - " + parameterizedType);
 
@@ -254,15 +260,20 @@ public class JsonGenerator {
         Type valueClass = parameterizedType.getActualTypeArguments()[1];
         String defaultValue = defaultValueOf(keyClass);
 
+        TypeWrapper childTypeWrapper = null;
+        if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
+            childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
+        }
+
         //TODO: разобраться, почему нужно отдельно сравнивать с ParameterizedTypeImpl
         if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
                 valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
             Type rawType = ((ParameterizedType) valueClass).getRawType();
             Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
 
-            return createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments, typeWrapper);
+            return createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments, childTypeWrapper);
         } else {
-            return createNodeForMap(defaultValue, (Class<?>) valueClass, null, typeWrapper);
+            return createNodeForMap(defaultValue, (Class<?>) valueClass, null, childTypeWrapper);
         }
     }
 
@@ -346,7 +357,7 @@ public class JsonGenerator {
             //TODO: merge with validateAndCreateNodeForCollection
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null){
+            if (typeWrapper != null) {
                 childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
             }
 
@@ -355,7 +366,7 @@ public class JsonGenerator {
         } else if (Map.class.isAssignableFrom(type)) {
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1){
+            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
                 childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
             }
 
@@ -369,13 +380,9 @@ public class JsonGenerator {
         } else {
             List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
 
-            Map<String, String> typesMap;
-            if (typeWrapper != null && !CollectionUtils.isEmpty(typeWrapper.getTypeWrappers())){
-                typesMap = toTypesMap(typeParams, typeWrapper.getTypeWrappers().get(0));
-                items = createPropertyFor(type, typesMap);
-            } else {
-                items = createPropertyFor(type, null);
-            }
+            Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
+            items = createPropertyFor(type, typesMap);
+
         }
         arrayNode.set("items", items);
         return arrayNode;
@@ -396,7 +403,7 @@ public class JsonGenerator {
             //TODO: merge with validateAndCreateNodeForCollection
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null){
+            if (typeWrapper != null) {
                 childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
             }
             valueNode = createArrayNode(allTypes.get(0), typeArgumentsArray, childTypeWrapper);
@@ -407,7 +414,7 @@ public class JsonGenerator {
             String nextDefaultValue = defaultValueOf((Class) keyClass);
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1){
+            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
                 childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
             }
             valueNode = createNodeForMap(valueClass, nextDefaultValue, childTypeWrapper);
@@ -415,14 +422,9 @@ public class JsonGenerator {
         } else {
             List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
 
-            Map<String, String> typesMap = null;
-            if (typeWrapper != null && !CollectionUtils.isEmpty(typeWrapper.getTypeWrappers())) {
-                typesMap = toTypesMap(typeParams, typeWrapper);
+            Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
 
-                valueNode = createPropertyFor(type, typesMap);
-            } else {
-                valueNode = createPropertyFor(type, null);
-            }
+            valueNode = createPropertyFor(type, typesMap);
         }
 
         ObjectNode propertiesNode = mapper.createObjectNode();
@@ -491,7 +493,7 @@ public class JsonGenerator {
             return propertyOfDateNode();
         }
         if (type.isEnum()) {
-            return propertyOfEnumNode((Class<? extends Enum>)type);
+            return propertyOfEnumNode((Class<? extends Enum>) type);
         }
         ObjectNode property = mapper.createObjectNode();
         createEntityDefinition(type, typesMap, null);
@@ -556,19 +558,19 @@ public class JsonGenerator {
         String refName = toUnderscore(entityClass.getSimpleName());
 
         if (!MapUtils.isEmpty(actualTypeArguments)) {
-            refName = refName +"_"+ actualTypeArguments
+            refName = refName + "_" + actualTypeArguments
                     .values()
                     .stream()
                     .map(s -> {
                         List<String> strings = Arrays.asList(s.split("\\."));
-                        return strings.get(strings.size() -1);
+                        return strings.get(strings.size() - 1);
                     })
                     .map(s -> toUnderscore(toSimpleName(s)))
                     .collect(Collectors.joining("_"));
         }
 
         if (!MapUtils.isEmpty(typeArguments)) {
-            refName = refName +"_"+ typeArguments
+            refName = refName + "_" + typeArguments
                     .values()
                     .stream()
                     .map(Type::getTypeName)

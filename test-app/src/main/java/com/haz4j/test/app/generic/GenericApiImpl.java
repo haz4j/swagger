@@ -31,10 +31,10 @@ public class GenericApiImpl implements GenericApi {
         return genericDto;
     }
 
-//    @Override
-//    public List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto) {
-//        return genericDto;
-//    }
+    @Override
+    public List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto) {
+        return genericDto;
+    }
 
     //TODO: добавить
     /*

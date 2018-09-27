@@ -1,11 +1,8 @@
 package com.haz4j.test.app.generic;
 
-import com.googlecode.jsonrpc4j.JsonRpcError;
-import com.googlecode.jsonrpc4j.JsonRpcErrors;
 import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +25,7 @@ public interface GenericApi {
             @JsonRpcParam(value = "generic_dto") Map<String, GenericDto<Entry1, Entry2, Entry1>> genericDto
     );
 
-//    List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(
-//            @JsonRpcParam(value = "generic_dto") List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto
-//    );
+    List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(
+            @JsonRpcParam(value = "generic_dto") List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto
+    );
 }
