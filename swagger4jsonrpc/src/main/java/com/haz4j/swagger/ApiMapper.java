@@ -3,6 +3,7 @@ package com.haz4j.swagger;
 import com.haz4j.swagger.structure.ClassStruct;
 import com.haz4j.swagger.structure.MethodStruct;
 import com.haz4j.swagger.structure.ParameterStruct;
+import com.haz4j.swagger.structure.ParameterizedTypeStruct;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Method;
@@ -56,9 +57,17 @@ public class ApiMapper {
 
         if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
                 parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-            struct.setParameterizedType((ParameterizedType) parameter.getParameterizedType());
+            struct.setParameterizedType(toStruct((ParameterizedType) parameter.getParameterizedType()));
         }
         struct.setPropertyName(ReflectionUtils.getJsonRpcParam(parameter));
+        return struct;
+    }
+
+    public static ParameterizedTypeStruct toStruct(ParameterizedType parameterizedType) {
+        ParameterizedTypeStruct struct = new ParameterizedTypeStruct();
+        struct.setRawType(parameterizedType.getRawType());
+        struct.setActualTypeArguments(parameterizedType.getActualTypeArguments());
+
         return struct;
     }
 

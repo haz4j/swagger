@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.haz4j.swagger.structure.ClassStruct;
 import com.haz4j.swagger.structure.MethodStruct;
 import com.haz4j.swagger.structure.ParameterStruct;
+import com.haz4j.swagger.structure.ParameterizedTypeStruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -193,7 +194,7 @@ public class JsonGenerator {
 
         if (Collection.class.isAssignableFrom(type)) {
 
-            ParameterizedType parameterizedType = parameter.getParameterizedType();
+            ParameterizedTypeStruct parameterizedType = parameter.getParameterizedType();
             return validateAndCreateNodeForCollection(type, parameterizedType, typeWrapper);
 
         } else if (type.isArray()) {
@@ -202,13 +203,13 @@ public class JsonGenerator {
 
         } else if (Map.class.isAssignableFrom(type)) {
 
-            ParameterizedType parameterizedType = parameter.getParameterizedType();
+            ParameterizedTypeStruct parameterizedType = parameter.getParameterizedType();
             return validateAndCreateNodeForMap(type, parameterizedType, typeWrapper);
 
         } else {
 
             if (parameter.getParameterizedType() != null) {
-                ParameterizedType parameterizedType = parameter.getParameterizedType();
+                ParameterizedTypeStruct parameterizedType = parameter.getParameterizedType();
 
                 Type rawType = parameterizedType.getRawType();
 
@@ -237,7 +238,7 @@ public class JsonGenerator {
 
     //type - collection
     //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
-    private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedType parameterizedType, TypeWrapper typeWrapper) {
+    private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedTypeStruct parameterizedType, TypeWrapper typeWrapper) {
         log.debug("validateAndCreateNodeForCollection: type - " + type + ", parameterizedType - " + parameterizedType);
 
         validateTypeArgsLength(type, parameterizedType, 1);
@@ -252,7 +253,7 @@ public class JsonGenerator {
     }
 
     //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
-    private ObjectNode validateAndCreateNodeForMap(Class<?> type, ParameterizedType parameterizedType, TypeWrapper typeWrapper) {
+    private ObjectNode validateAndCreateNodeForMap(Class<?> type, ParameterizedTypeStruct parameterizedType, TypeWrapper typeWrapper) {
         log.debug("validateAndCreateNodeForMap: type - " + type + ", parameterizedType - " + parameterizedType);
 
         validateTypeArgsLength(type, parameterizedType, 2);
@@ -277,7 +278,7 @@ public class JsonGenerator {
         }
     }
 
-    private void validateTypeArgsLength(Class<?> type, ParameterizedType parameterizedType, int length) {
+    private void validateTypeArgsLength(Class<?> type, ParameterizedTypeStruct parameterizedType, int length) {
         log.debug("validateTypeArgsLength: type - " + type + ", parameterizedType - " + parameterizedType + ", length - " + length);
 
         if (parameterizedType == null || parameterizedType.getActualTypeArguments() == null || parameterizedType.getActualTypeArguments().length != length) {
@@ -315,14 +316,14 @@ public class JsonGenerator {
             Class<?> type = field.getType();
             if (Collection.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                ObjectNode arrayNode = validateAndCreateNodeForCollection(type, parameterizedType, null);
+                ObjectNode arrayNode = validateAndCreateNodeForCollection(type, ApiMapper.toStruct(parameterizedType), null); //TODO: api mapper shouldnt be called from here
                 properties.set(fieldName, arrayNode);
             } else if (type.isArray()) {
                 ObjectNode arrayNode = createArrayNode(type.getComponentType(), null, null);
                 properties.set(fieldName, arrayNode);
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                ObjectNode mapNode = validateAndCreateNodeForMap(type, parameterizedType, null);
+                ObjectNode mapNode = validateAndCreateNodeForMap(type, ApiMapper.toStruct(parameterizedType), null);
                 properties.set(fieldName, mapNode);
             } else {
                 //field class has no suitable api and I don't wont to use reflection here
