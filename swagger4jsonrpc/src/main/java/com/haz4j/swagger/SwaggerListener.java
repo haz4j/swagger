@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -57,15 +58,15 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
             //Collect all data to the only collection
             for (DocketApi docket : dockets) {
 
-                Map<Class, List<Method>> apiMap = getClassMapMap(apis, docket.getPathMapping());
+                List<Class> api = filterClasses(apis, docket.getPathMapping());
 
-                ApiStruct apiStructMap = ApiMapper.toStruct(apiMap);
+                ApiStruct apiStruct = ApiMapper.toStruct(api);
 
                 String hostName = Optional
                         .ofNullable(docket.getHost())
                         .orElse("host_placeholder");
 
-                jsons.add(jsonGenerator.createJson(hostName, apiStructMap));
+                jsons.add(jsonGenerator.createJson(hostName, apiStruct));
             }
 
             return jsons.get(0);
@@ -101,22 +102,10 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
         return beansImpl.getClass();
     }
 
-    public Map<Class, List<Method>> getClassMapMap(List<Class> apis, String pathMapping) {
-        Map<Class, List<Method>> apiMap = new HashMap<>();
-
-        for (Class api : apis) {
-
-            if (pathMapping != null) {
-
-                String path = ReflectionUtils.getPath(api);
-
-                if(!path.contains(pathMapping)){
-                    continue;
-                }
-            }
-            apiMap.put(api, Arrays.asList(api.getMethods()));
-        }
-        return apiMap;
+    public List<Class> filterClasses(List<Class> apis, String pathMapping) {
+        return apis.stream()
+                .filter(c -> ReflectionUtils.getPath(c).contains(pathMapping))
+                .collect(Collectors.toList());
     }
 
     public String getJson() {

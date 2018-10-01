@@ -7,19 +7,18 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class ApiMapper {
 
 
-    public static ApiStruct toStruct(Map<Class, List<Method>> apiMap) {
+    public static ApiStruct toStruct(List<Class> classes) {
 
         ApiStruct api = new ApiStruct();
-
-        for (Map.Entry<Class, List<Method>> entry : apiMap.entrySet()) {
-            ClassStruct classStruct = toStruct(entry.getKey());
-            List<Method> methods = entry.getValue();
+        for (Class aClass : classes) {
+            ClassStruct classStruct = toStruct(aClass);
+            List<Method> methods = Arrays.asList(aClass.getMethods());
             classStruct.getMethods().addAll(toStructMethod(methods));
             api.getStructs().add(classStruct);
         }

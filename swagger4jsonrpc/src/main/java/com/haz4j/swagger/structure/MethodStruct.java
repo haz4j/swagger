@@ -3,7 +3,9 @@ package com.haz4j.swagger.structure;
 import com.haz4j.swagger.TypeWrapper;
 import lombok.Data;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 @Data
 public class MethodStruct {
