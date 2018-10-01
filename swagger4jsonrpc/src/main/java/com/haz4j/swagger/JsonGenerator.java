@@ -225,7 +225,7 @@ public class JsonGenerator {
             return new HashMap<>();
         }
 
-        Map<String, String> map = new HashMap();
+        Map<String, String> map = new HashMap<>();
         for (int i = 0; i < typeWrapper.getTypeWrappers().size(); i++) {
             map.put(typeParams.get(i).getName(), typeWrapper.getTypeWrappers().get(i).getName());
         }
@@ -262,16 +262,7 @@ public class JsonGenerator {
             childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
         }
 
-        //TODO: разобраться, почему нужно отдельно сравнивать с ParameterizedTypeImpl
-        if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
-                valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-            Type rawType = ((ParameterizedType) valueClass).getRawType();
-            Type[] actualTypeArguments = ((ParameterizedType) valueClass).getActualTypeArguments();
-
-            return createNodeForMap(defaultValue, (Class<?>) rawType, actualTypeArguments, childTypeWrapper);
-        } else {
-            return createNodeForMap(defaultValue, (Class<?>) valueClass, null, childTypeWrapper);
-        }
+        return createNodeForMap(valueClass, defaultValue, childTypeWrapper);
     }
 
     private void validateTypeArgsLength(Class<?> type, ParameterizedTypeStruct parameterizedType, int length) {
