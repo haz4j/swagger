@@ -1,35 +1,36 @@
 package com.haz4j.swagger;
 
-import com.haz4j.swagger.structure.ClassStruct;
-import com.haz4j.swagger.structure.MethodStruct;
-import com.haz4j.swagger.structure.ParameterStruct;
-import com.haz4j.swagger.structure.ParameterizedTypeStruct;
+import com.haz4j.swagger.structure.*;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ApiMapper {
 
 
-    public static Map<ClassStruct, List<MethodStruct>> toStruct(Map<Class, Map<Method, List<Parameter>>> apiMap) {
-        Map<ClassStruct, List<MethodStruct>> structMap = new HashMap<>();
+    public static ApiStruct toStruct(Map<Class, List<Method>> apiMap) {
 
-        for (Map.Entry<Class, Map<Method, List<Parameter>>> entry : apiMap.entrySet()) {
-            structMap.put(toStruct(entry.getKey()), toStructMethod(entry.getValue()));
+        ApiStruct api = new ApiStruct();
+
+        for (Map.Entry<Class, List<Method>> entry : apiMap.entrySet()) {
+            ClassStruct classStruct = toStruct(entry.getKey());
+            List<Method> methods = entry.getValue();
+            classStruct.getMethods().addAll(toStructMethod(methods));
+            api.getStructs().add(classStruct);
         }
-        return structMap;
+        return api;
     }
 
-    private static List<MethodStruct> toStructMethod(Map<Method, List<Parameter>> methodMap) {
+    private static List<MethodStruct> toStructMethod(List<Method> methods) {
         List<MethodStruct> structList = new ArrayList<>();
-        for (Map.Entry<Method, List<Parameter>> entry : methodMap.entrySet()) {
-            structList.add(toStruct(entry.getKey()));
+        for (Method method : methods) {
+            MethodStruct methodStruct = toStruct(method);
+            structList.add(methodStruct);
         }
         return structList;
     }
@@ -38,8 +39,8 @@ public class ApiMapper {
         MethodStruct struct = new MethodStruct();
         struct.setDescription(ReflectionUtils.getDescription(method));
         struct.setName(method.getName());
-        struct.setParameters(toStruct(method.getParameters()));
-        struct.setSignature(ReflectionUtils.getSignature(method));
+        struct.getParameters().addAll(toStruct(method.getParameters()));
+        struct.getSignature().addAll(ReflectionUtils.getSignature(method));
         return struct;
     }
 

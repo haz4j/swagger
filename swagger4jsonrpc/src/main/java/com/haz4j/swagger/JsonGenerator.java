@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.haz4j.swagger.structure.ClassStruct;
-import com.haz4j.swagger.structure.MethodStruct;
-import com.haz4j.swagger.structure.ParameterStruct;
-import com.haz4j.swagger.structure.ParameterizedTypeStruct;
+import com.haz4j.swagger.structure.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -33,7 +30,7 @@ public class JsonGenerator {
 
     private Map<String, JsonNode> definitions;
 
-    public String createJson(String hostName, Map<ClassStruct, List<MethodStruct>> apiMap) {
+    public String createJson(String hostName, ApiStruct apis) {
 
         definitions = new HashMap<>();
 
@@ -42,7 +39,7 @@ public class JsonGenerator {
         ObjectNode paths = mapper.createObjectNode();
         ObjectNode definitionsNode = mapper.createObjectNode();
 
-        apiMap.forEach((api, methods) -> {
+        apis.getStructs().forEach((api) -> {
 
             log.debug("api = " + api);
 
@@ -56,8 +53,7 @@ public class JsonGenerator {
 
             int i = 0;
 
-
-            for (MethodStruct method : methods) {
+            for (MethodStruct method : api.getMethods()) {
                 log.debug("method = " + method);
 
                 ObjectNode apiNode = mapper.createObjectNode();
@@ -168,14 +164,14 @@ public class JsonGenerator {
         definitionNode.put("type", "object");
         ObjectNode propertiesNode = mapper.createObjectNode();
 
-        List<TypeWrapper> typeWrappers = method.getSignature();
+        SortedSet<TypeWrapper> typeWrappers = method.getSignature();
 
         for (int i = 0; i < method.getParameters().size(); i++) {
-            ParameterStruct parameter = method.getParameters().get(i);
+            ParameterStruct parameter = new ArrayList<>(method.getParameters()).get(i);
             TypeWrapper typeWrapper = null;
 
             if (typeWrappers.size() > i) {
-                typeWrapper = typeWrappers.get(i);
+                typeWrapper = new ArrayList<>(typeWrappers).get(i);
             }
 
             JsonNode paramFromMethodParameter = createParamFromMethodParameter(parameter, typeWrapper);

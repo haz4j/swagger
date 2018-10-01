@@ -1,8 +1,6 @@
 package com.haz4j.swagger;
 
-import com.haz4j.swagger.structure.ClassStruct;
-import com.haz4j.swagger.structure.MethodStruct;
-import com.haz4j.swagger.structure.ParameterStruct;
+import com.haz4j.swagger.structure.ApiStruct;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -15,7 +13,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.*;
 
 @Slf4j
@@ -60,9 +57,9 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
             //Collect all data to the only collection
             for (DocketApi docket : dockets) {
 
-                Map<Class, Map<Method, List<Parameter>>> apiMap = getClassMapMap(apis, docket.getPathMapping());
+                Map<Class, List<Method>> apiMap = getClassMapMap(apis, docket.getPathMapping());
 
-                Map<ClassStruct, List<MethodStruct>> apiStructMap = ApiMapper.toStruct(apiMap);
+                ApiStruct apiStructMap = ApiMapper.toStruct(apiMap);
 
                 String hostName = Optional
                         .ofNullable(docket.getHost())
@@ -104,8 +101,8 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
         return beansImpl.getClass();
     }
 
-    public Map<Class, Map<Method, List<Parameter>>> getClassMapMap(List<Class> apis, String pathMapping) {
-        Map<Class, Map<Method, List<Parameter>>> apiMap = new HashMap<>();
+    public Map<Class, List<Method>> getClassMapMap(List<Class> apis, String pathMapping) {
+        Map<Class, List<Method>> apiMap = new HashMap<>();
 
         for (Class api : apis) {
 
@@ -117,13 +114,7 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
                     continue;
                 }
             }
-
-            apiMap.computeIfAbsent(api, k -> new HashMap<>());
-            Map<Method, List<Parameter>> methodMap = apiMap.get(api);
-            for (Method method : api.getMethods()) {
-                methodMap.computeIfAbsent(method, k -> new ArrayList<>());
-                methodMap.get(method).addAll(Arrays.asList(method.getParameters()));
-            }
+            apiMap.put(api, Arrays.asList(api.getMethods()));
         }
         return apiMap;
     }

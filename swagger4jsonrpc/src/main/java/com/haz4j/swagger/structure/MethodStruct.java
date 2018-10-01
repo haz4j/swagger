@@ -3,13 +3,13 @@ package com.haz4j.swagger.structure;
 import com.haz4j.swagger.TypeWrapper;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Data
 public class MethodStruct {
     private String description;
     private String name;
-    private List<ParameterStruct> parameters = new ArrayList<>();
-    private List<TypeWrapper> signature = new ArrayList<>();
+    private SortedSet<ParameterStruct> parameters = new TreeSet<>(Comparator.comparing(ParameterStruct::getPropertyName));
+    private SortedSet<TypeWrapper> signature = new TreeSet<>(Comparator.comparing(TypeWrapper::getName));
+
 }
