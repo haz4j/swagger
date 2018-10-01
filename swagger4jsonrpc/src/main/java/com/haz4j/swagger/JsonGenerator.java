@@ -191,7 +191,15 @@ public class JsonGenerator {
         if (Collection.class.isAssignableFrom(type)) {
 
             ParameterizedTypeStruct parameterizedType = parameter.getParameterizedType();
-            return validateAndCreateNodeForCollection(type, parameterizedType, typeWrapper);
+
+            Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
+
+            TypeWrapper childTypeWrapper = null;
+            if (typeWrapper != null) {
+                childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
+            }
+
+            return createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
 
         } else if (type.isArray()) {
 
@@ -242,30 +250,6 @@ public class JsonGenerator {
         return map;
     }
 
-    //type - collection
-    //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
-    private ObjectNode validateAndCreateNodeForCollection(Class<?> type, ParameterizedTypeStruct parameterizedType, TypeWrapper typeWrapper) {
-        log.debug("validateAndCreateNodeForCollection: type - " + type + ", parameterizedType - " + parameterizedType);
-
-        validateTypeArgsLength(type, parameterizedType, 1);
-        Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
-
-        TypeWrapper childTypeWrapper = null;
-        if (typeWrapper != null) {
-            childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
-        }
-
-        return createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
-    }
-
-    private void validateTypeArgsLength(Class<?> type, ParameterizedTypeStruct parameterizedType, int length) {
-        log.debug("validateTypeArgsLength: type - " + type + ", parameterizedType - " + parameterizedType + ", length - " + length);
-
-        if (parameterizedType == null || parameterizedType.getActualTypeArguments() == null || parameterizedType.getActualTypeArguments().length != length) {
-            throw new RuntimeException("Can't find actual type for field" + type);
-        }
-    }
-
     private void createEntityDefinition(Class<?> entityClass, Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("createEntityDefinition: entityClass - " + entityClass + ", typeArguments - " + typeArguments);
 
@@ -296,7 +280,19 @@ public class JsonGenerator {
             Class<?> type = field.getType();
             if (Collection.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                ObjectNode arrayNode = validateAndCreateNodeForCollection(type, ApiMapper.toStruct(parameterizedType), null); //TODO: api mapper shouldnt be called from here
+
+                Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
+
+                TypeWrapper childTypeWrapper = null;
+                TypeWrapper typeWrapper = null;  //TODO: странно
+
+                if (typeWrapper != null) {
+                    childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
+                }
+
+                ObjectNode arrayNode = createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
+
+
                 properties.set(fieldName, arrayNode);
             } else if (type.isArray()) {
                 ObjectNode arrayNode = createArrayNode(type.getComponentType(), null, null);
@@ -304,10 +300,8 @@ public class JsonGenerator {
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
 
-                ParameterizedTypeStruct parameterizedTypeStruct = ApiMapper.toStruct(parameterizedType);
-
-                Class keyClass = (Class) parameterizedTypeStruct.getActualTypeArguments()[0];
-                Type valueClass = parameterizedTypeStruct.getActualTypeArguments()[1];
+                Class keyClass = (Class) parameterizedType.getActualTypeArguments()[0];
+                Type valueClass = parameterizedType.getActualTypeArguments()[1];
                 String defaultValue = defaultValueOf(keyClass);
 
                 TypeWrapper childTypeWrapper = null;
