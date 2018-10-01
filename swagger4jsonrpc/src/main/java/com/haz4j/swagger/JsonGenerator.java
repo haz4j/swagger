@@ -200,7 +200,17 @@ public class JsonGenerator {
         } else if (Map.class.isAssignableFrom(type)) {
 
             ParameterizedTypeStruct parameterizedType = parameter.getParameterizedType();
-            return validateAndCreateNodeForMap(type, parameterizedType, typeWrapper);
+
+            Class keyClass = (Class) parameterizedType.getActualTypeArguments()[0];
+            Type valueClass = parameterizedType.getActualTypeArguments()[1];
+            String defaultValue = defaultValueOf(keyClass);
+
+            TypeWrapper childTypeWrapper = null;
+            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
+                childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
+            }
+
+            return createNodeForMap(valueClass, defaultValue, childTypeWrapper);
 
         } else {
 
@@ -248,23 +258,6 @@ public class JsonGenerator {
         return createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
     }
 
-    //TODO: выпилить этот метод и уж точно избавиться от определения childTypeWrapper в нем
-    private ObjectNode validateAndCreateNodeForMap(Class<?> type, ParameterizedTypeStruct parameterizedType, TypeWrapper typeWrapper) {
-        log.debug("validateAndCreateNodeForMap: type - " + type + ", parameterizedType - " + parameterizedType);
-
-        validateTypeArgsLength(type, parameterizedType, 2);
-        Class keyClass = (Class) parameterizedType.getActualTypeArguments()[0];
-        Type valueClass = parameterizedType.getActualTypeArguments()[1];
-        String defaultValue = defaultValueOf(keyClass);
-
-        TypeWrapper childTypeWrapper = null;
-        if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
-            childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
-        }
-
-        return createNodeForMap(valueClass, defaultValue, childTypeWrapper);
-    }
-
     private void validateTypeArgsLength(Class<?> type, ParameterizedTypeStruct parameterizedType, int length) {
         log.debug("validateTypeArgsLength: type - " + type + ", parameterizedType - " + parameterizedType + ", length - " + length);
 
@@ -310,7 +303,21 @@ public class JsonGenerator {
                 properties.set(fieldName, arrayNode);
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
-                ObjectNode mapNode = validateAndCreateNodeForMap(type, ApiMapper.toStruct(parameterizedType), null);
+
+                ParameterizedTypeStruct parameterizedTypeStruct = ApiMapper.toStruct(parameterizedType);
+
+                Class keyClass = (Class) parameterizedTypeStruct.getActualTypeArguments()[0];
+                Type valueClass = parameterizedTypeStruct.getActualTypeArguments()[1];
+                String defaultValue = defaultValueOf(keyClass);
+
+                TypeWrapper childTypeWrapper = null;
+                TypeWrapper typeWrapper = null; //TODO: странно
+                if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
+                    childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
+                }
+
+                ObjectNode mapNode = createNodeForMap(valueClass, defaultValue, childTypeWrapper);
+
                 properties.set(fieldName, mapNode);
             } else {
                 //field class has no suitable api and I don't wont to use reflection here
