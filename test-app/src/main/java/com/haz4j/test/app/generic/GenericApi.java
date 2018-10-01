@@ -28,4 +28,8 @@ public interface GenericApi {
     List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(
             @JsonRpcParam(value = "generic_dto") List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto
     );
+
+    GenericDto<Entry1, Entry3, Entry2>[] save6(
+            @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry3, Entry2>[] genericDto
+    );
 }

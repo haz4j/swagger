@@ -79,8 +79,8 @@ public class ReflectionUtils {
         f.setAccessible(true);
         String signature = (String) f.get(field); //for "R" it will be "TR;"
         if (signature != null) {
-            return signature.substring(1, signature.length()-1);
-        } else{
+            return signature.substring(1, signature.length() - 1);
+        } else {
             return null;
         }
 
@@ -89,7 +89,7 @@ public class ReflectionUtils {
     private static Type getFromMap(Map<TypeVariable<?>, Type> typeArguments, String realTypeName) {
         Type realType = null;
         for (TypeVariable<?> key : typeArguments.keySet()) {
-            if (key.getName().equals(realTypeName)){
+            if (key.getName().equals(realTypeName)) {
                 realType = typeArguments.get(key);
             }
         }
@@ -111,11 +111,15 @@ public class ReflectionUtils {
     //TODO: rename method to getTypeWrappers
     public static List<TypeWrapper> getSignature(Method method) {
 
+        //TODO: перенести все это выше
         Field methodSignature = Method.class.getDeclaredField("signature");
         methodSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
 
         Field classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
         classTypeSignaturePath.setAccessible(true);
+
+        Field arrayTypeSignatureComponentType = ArrayTypeSignature.class.getDeclaredField("componentType");
+        arrayTypeSignatureComponentType.setAccessible(true);
 
         String signature = (String) methodSignature.get(method);
         if (signature == null) {
@@ -127,7 +131,7 @@ public class ReflectionUtils {
         List<TypeWrapper> allSignatures = new ArrayList<>();
 
         for (TypeSignature parameterType : parameterTypes) {
-            allSignatures.add(toTypeWrapper(parameterType, classTypeSignaturePath));
+            allSignatures.add(toTypeWrapper(parameterType, classTypeSignaturePath, arrayTypeSignatureComponentType));
         }
 
         return allSignatures;
@@ -135,16 +139,25 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    private static TypeWrapper toTypeWrapper(TypeSignature parameterType, Field classTypeSignaturePath) {
+    private static TypeWrapper toTypeWrapper(TypeSignature parameterType, Field classTypeSignaturePath, Field arrayTypeSignatureComponentType) {
         TypeWrapper typeWrapper = new TypeWrapper();
-        ArrayList path = (ArrayList) classTypeSignaturePath.get(parameterType);
-        for (Object o : path) {
+
+        if (ArrayTypeSignature.class.isAssignableFrom(parameterType.getClass())) {
+            ClassTypeSignature classTypeSignature = (ClassTypeSignature) arrayTypeSignatureComponentType.get(parameterType);
+
+            //this is array, thus we call the same method with element as a parameter
+            return toTypeWrapper(classTypeSignature, classTypeSignaturePath, arrayTypeSignatureComponentType);
+        }
+
+        ArrayList paths = (ArrayList) classTypeSignaturePath.get(parameterType);
+
+        for (Object o : paths) {
             SimpleClassTypeSignature signature = (SimpleClassTypeSignature) o;
             typeWrapper.setName(signature.getName());
             TypeArgument[] typeArguments = signature.getTypeArguments();
             for (TypeArgument typeArgument : typeArguments) {
                 TypeSignature typeSignature = (TypeSignature) typeArgument;
-                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature, classTypeSignaturePath));
+                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature, classTypeSignaturePath, arrayTypeSignatureComponentType));
             }
         }
 
@@ -167,7 +180,7 @@ public class ReflectionUtils {
         Field f = Class.class.getDeclaredField("genericInfo");
         f.setAccessible(true);
         ClassRepository classRepository = (ClassRepository) f.get(type);
-        if (classRepository == null){
+        if (classRepository == null) {
             return new ArrayList<>();
         }
 
@@ -183,9 +196,5 @@ public class ReflectionUtils {
             return Pair.of(tagName, tagValue);
         }
         return Pair.of("default", "");
-    }
-
-    public static List<TypeWrapper> getSignature(MethodStruct method) {
-        return null;
     }
 }

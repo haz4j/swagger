@@ -36,6 +36,11 @@ public class GenericApiImpl implements GenericApi {
         return genericDto;
     }
 
+    @Override
+    public GenericDto<Entry1, Entry3, Entry2>[] save6(GenericDto<Entry1, Entry3, Entry2>[] genericDto) {
+        return genericDto;
+    }
+
     //TODO: добавить
     /*
     @Override
