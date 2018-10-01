@@ -3,7 +3,6 @@ package com.haz4j.swagger;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
-import com.haz4j.swagger.structure.MethodStruct;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
@@ -59,18 +58,12 @@ public class ReflectionUtils {
             return null;
         }
 
-        String className = null;
-        try {
-            className = genericTypeArgs.get(signature);
-
-            if (className == null) {
-                System.out.println();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (genericTypeArgs != null && genericTypeArgs.get(signature) != null) {
+            String className = genericTypeArgs.get(signature);
+            return Class.forName(className);
         }
-        return Class.forName(className);
+
+        return null;
     }
 
     @SneakyThrows

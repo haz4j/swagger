@@ -32,4 +32,8 @@ public interface GenericApi {
     GenericDto<Entry1, Entry3, Entry2>[] save6(
             @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry3, Entry2>[] genericDto
     );
+
+//    Entry5 save7(
+//            @JsonRpcParam(value = "entry") Entry5 entry
+//    );
 }

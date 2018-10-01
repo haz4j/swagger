@@ -41,6 +41,11 @@ public class GenericApiImpl implements GenericApi {
         return genericDto;
     }
 
+//    @Override
+//    public Entry5 save7(Entry5 entry) {
+//        return entry;
+//    }
+
     //TODO: добавить
     /*
     @Override

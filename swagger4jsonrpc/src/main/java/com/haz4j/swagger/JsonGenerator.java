@@ -468,9 +468,9 @@ public class JsonGenerator {
     }
 
     @SuppressWarnings("unchecked")
-    private ObjectNode createPropertyFor(Class<?> type, Map<String, String> typesMap) {
+    private ObjectNode createPropertyFor(Class<?> type, Map<String, String> genericTypeArgs) {
 
-        log.debug("createPropertyFor: type - " + type + ", typesMap - " + typesMap);
+        log.debug("createPropertyFor: type - " + type + ", genericTypeArgs - " + genericTypeArgs);
 
         if (ClassUtils.isPrimitiveOrWrapper(type)) {
             return propertyOfLongNode();
@@ -485,8 +485,8 @@ public class JsonGenerator {
             return propertyOfEnumNode((Class<? extends Enum>) type);
         }
         ObjectNode property = mapper.createObjectNode();
-        createEntityDefinition(type, typesMap, null);
-        property.put("$ref", "#/definitions/" + getRefName(type, typesMap, null));
+        createEntityDefinition(type, genericTypeArgs, null);
+        property.put("$ref", "#/definitions/" + getRefName(type, genericTypeArgs, null));
         return property;
     }
 
