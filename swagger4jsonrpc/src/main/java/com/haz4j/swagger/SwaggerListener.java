@@ -4,6 +4,7 @@ import com.haz4j.swagger.structure.ApiStruct;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.aop.TargetClassAware;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,10 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -103,6 +106,9 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
     }
 
     public List<Class> filterClasses(List<Class> apis, String pathMapping) {
+        if (StringUtils.isEmpty(pathMapping)) {
+            return apis;
+        }
         return apis.stream()
                 .filter(c -> ReflectionUtils.getPath(c).contains(pathMapping))
                 .collect(Collectors.toList());
