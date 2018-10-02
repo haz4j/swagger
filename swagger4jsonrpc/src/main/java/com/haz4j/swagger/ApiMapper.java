@@ -38,7 +38,7 @@ public class ApiMapper {
         struct.setDescription(ReflectionUtils.getDescription(method));
         struct.setName(method.getName());
         struct.getParameters().addAll(toStruct(method.getParameters()));
-        struct.getSignature().addAll(ReflectionUtils.getSignature(method));
+        struct.getSignature().addAll(ReflectionUtils.getTypeWrappers(method));
         return struct;
     }
 

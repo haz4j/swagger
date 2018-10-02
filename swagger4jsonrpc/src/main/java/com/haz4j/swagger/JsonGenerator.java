@@ -317,7 +317,7 @@ public class JsonGenerator {
                 //field class has no suitable api and I don't wont to use reflection here
                 //so we will parse string like "private T ru.nic.rates.core.domain.entity.EntityFromFile.entity"
                 //to check if this field has generic
-                Class realType = ReflectionUtils.getRealType(field, genericTypeArgs, typeArguments);
+                Class realType = ReflectionUtils.getRealType(field, genericTypeArgs);
 
                 ObjectNode property;
                 if (realType != null) {

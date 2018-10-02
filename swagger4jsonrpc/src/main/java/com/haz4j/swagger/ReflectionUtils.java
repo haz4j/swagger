@@ -7,18 +7,41 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import sun.reflect.generics.parser.SignatureParser;
 import sun.reflect.generics.repository.ClassRepository;
 import sun.reflect.generics.tree.*;
 
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.TypeVariable;
 import java.util.*;
 
 @Slf4j
 public class ReflectionUtils {
+
+    private static Field methodSignature;
+    private static Field classTypeSignaturePath;
+    private static Field arrayTypeSignatureComponentType;
+    private static Field fieldSignature;
+
+    static {
+        init();
+    }
+
+    @SneakyThrows
+    public static void init(){
+        methodSignature = Method.class.getDeclaredField("signature");
+        classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
+        arrayTypeSignatureComponentType = ArrayTypeSignature.class.getDeclaredField("componentType");
+        fieldSignature = Field.class.getDeclaredField("signature");
+        methodSignature.setAccessible(true);
+        classTypeSignaturePath.setAccessible(true);
+        arrayTypeSignatureComponentType.setAccessible(true);
+        fieldSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
+    }
 
     public static String getJsonRpcParam(Parameter parameter) {
         JsonRpcParam[] jsonRpcParams = parameter.getAnnotationsByType(JsonRpcParam.class);
@@ -45,14 +68,8 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static Class getRealType(Field field, Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
-        log.debug("getRealType: typeArguments - " + typeArguments + ", field - " + field);
-
-        if (field.toGenericString().contains(" ") && !MapUtils.isEmpty(typeArguments)) {
-            String realTypeName = field.toGenericString().split(" ")[1];
-            return (Class) getFromMap(typeArguments, realTypeName);
-        }
-
+    public static Class getRealType(Field field, Map<String, String> genericTypeArgs) {
+        // signature = TR;
         String signature = ReflectionUtils.getSignature(field);
         if (signature == null) {
             return null;
@@ -62,7 +79,6 @@ public class ReflectionUtils {
             String className = genericTypeArgs.get(signature);
             return Class.forName(className);
         }
-
         return null;
     }
 
@@ -76,19 +92,7 @@ public class ReflectionUtils {
         } else {
             return null;
         }
-
     }
-
-    private static Type getFromMap(Map<TypeVariable<?>, Type> typeArguments, String realTypeName) {
-        Type realType = null;
-        for (TypeVariable<?> key : typeArguments.keySet()) {
-            if (key.getName().equals(realTypeName)) {
-                realType = typeArguments.get(key);
-            }
-        }
-        return realType;
-    }
-
 
     public static String getDescription(Method method) {
         String description = "";
@@ -101,19 +105,9 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    //TODO: rename method to getTypeWrappers
-    public static List<TypeWrapper> getSignature(Method method) {
+    public static List<TypeWrapper> getTypeWrappers(Method method) {
 
         //TODO: перенести все это выше
-        Field methodSignature = Method.class.getDeclaredField("signature");
-        methodSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
-
-        Field classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
-        classTypeSignaturePath.setAccessible(true);
-
-        Field arrayTypeSignatureComponentType = ArrayTypeSignature.class.getDeclaredField("componentType");
-        arrayTypeSignatureComponentType.setAccessible(true);
-
         String signature = (String) methodSignature.get(method);
         if (signature == null) {
             return new ArrayList<>();
@@ -124,22 +118,21 @@ public class ReflectionUtils {
         List<TypeWrapper> allSignatures = new ArrayList<>();
 
         for (TypeSignature parameterType : parameterTypes) {
-            allSignatures.add(toTypeWrapper(parameterType, classTypeSignaturePath, arrayTypeSignatureComponentType));
+            allSignatures.add(toTypeWrapper(parameterType));
         }
 
         return allSignatures;
-
     }
 
     @SneakyThrows
-    private static TypeWrapper toTypeWrapper(TypeSignature parameterType, Field classTypeSignaturePath, Field arrayTypeSignatureComponentType) {
+    private static TypeWrapper toTypeWrapper(TypeSignature parameterType) {
         TypeWrapper typeWrapper = new TypeWrapper();
 
         if (ArrayTypeSignature.class.isAssignableFrom(parameterType.getClass())) {
             ClassTypeSignature classTypeSignature = (ClassTypeSignature) arrayTypeSignatureComponentType.get(parameterType);
 
             //this is array, thus we call the same method with element as a parameter
-            return toTypeWrapper(classTypeSignature, classTypeSignaturePath, arrayTypeSignatureComponentType);
+            return toTypeWrapper(classTypeSignature);
         }
 
         ArrayList paths = (ArrayList) classTypeSignaturePath.get(parameterType);
@@ -150,7 +143,7 @@ public class ReflectionUtils {
             TypeArgument[] typeArguments = signature.getTypeArguments();
             for (TypeArgument typeArgument : typeArguments) {
                 TypeSignature typeSignature = (TypeSignature) typeArgument;
-                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature, classTypeSignaturePath, arrayTypeSignatureComponentType));
+                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature));
             }
         }
 
