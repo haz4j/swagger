@@ -36,8 +36,10 @@ public class ApiStruct {
                                     .collect(
                                         Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(MethodStruct::getName)))
                             );
-                            cs.setMethods(filteredMethods);
-                            return cs;
+
+                            ClassStruct newClassStruct = new ClassStruct(cs);
+                            newClassStruct.setMethods(filteredMethods);
+                            return newClassStruct;
                         }
                 )
                 .collect(Collectors.toList());
