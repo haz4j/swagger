@@ -12,24 +12,24 @@ import java.util.Map;
 public interface GenericApi {
 
     //TODO: и сделать, чтобы параметры были не только в методе, а и в сущности и вспомнить какие были дженерики в другом проекте
-    GenericDto save1(@JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto);
+    GenericDto generic(@JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto);
 
-    List<GenericDto<Entry1, Entry2, Entry3>> save2(@JsonRpcParam(value = "generic_dto") List<GenericDto<Entry1, Entry2, Entry3>> genericDto);
+    List<GenericDto<Entry1, Entry2, Entry3>> listOfGenerics(@JsonRpcParam(value = "generic_dto") List<GenericDto<Entry1, Entry2, Entry3>> genericDto);
 
-    List<GenericDto<Entry3, Entry2, Entry1>> save3(
+    List<GenericDto<Entry3, Entry2, Entry1>> genericAndList(
             @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto,
             @JsonRpcParam(value = "generic_dtos") List<GenericDto<Entry3, Entry2, Entry1>> genericDtos
     );
 
-    Map<String, GenericDto<Entry1, Entry2, Entry1>> save4(
+    Map<String, GenericDto<Entry1, Entry2, Entry1>> mapOfGeneric(
             @JsonRpcParam(value = "generic_dto") Map<String, GenericDto<Entry1, Entry2, Entry1>> genericDto
     );
 
-    List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> save5(
+    List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> listAndMapOfgeneric(
             @JsonRpcParam(value = "generic_dto") List<Map<String, Map<String, List<List<Map<String, GenericDto<Entry1, Entry3, Entry2>>>>>>> genericDto
     );
 
-    GenericDto<Entry1, Entry3, Entry2>[] save6(
+    GenericDto<Entry1, Entry3, Entry2>[] arrayOfGeneric(
             @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry3, Entry2>[] genericDto
     );
 
