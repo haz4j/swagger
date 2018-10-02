@@ -12,7 +12,6 @@ import java.util.List;
 
 public class ApiMapper {
 
-
     public static ApiStruct toStruct(List<Class> classes) {
 
         ApiStruct api = new ApiStruct();

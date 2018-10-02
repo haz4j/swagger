@@ -1,4 +1,4 @@
-package com.haz4j.swagger.array;
+package com.haz4j.swagger.test.app.array;
 
 import lombok.Data;
 
