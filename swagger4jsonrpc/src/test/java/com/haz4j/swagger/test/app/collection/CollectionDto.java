@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 @Data
+//TODO: rewrite to several entities
 public class CollectionDto {
 
     private String name;
