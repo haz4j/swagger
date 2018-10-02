@@ -23,7 +23,9 @@ public class ApiStruct {
 
     public ApiStruct filter(String methodName){
         List<ClassStruct> filtered = structs.stream()
-                .filter(cs -> cs.getMethods().stream().anyMatch(m -> m.getName().contains(methodName)))
+                .filter(cs -> cs.getMethods().stream().anyMatch(
+                        m -> m.getName().equals(methodName)
+                ))
                 .collect(Collectors.toList());
         return new ApiStruct(filtered);
     }
