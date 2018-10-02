@@ -14,9 +14,11 @@ public class ArrayTest {
 
     public static String HOST_NAME = "localhost:8082/api";
 
+    public static ApiStruct API = ApiMapper.toStruct(Arrays.asList(ArrayApi.class));
+
     @Test
     public void saveTest() {
-        ApiStruct apiStruct = ApiMapper.toStruct(Arrays.asList(ArrayApi.class))
+        ApiStruct apiStruct = API
                 .filter("save");
 
         String json = generator.createJson(HOST_NAME, apiStruct);
