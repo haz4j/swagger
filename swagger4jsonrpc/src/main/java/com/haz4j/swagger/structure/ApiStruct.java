@@ -3,6 +3,7 @@ package com.haz4j.swagger.structure;
 import lombok.Data;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Data
@@ -21,13 +22,25 @@ public class ApiStruct {
 
     }
 
-    public ApiStruct filter(String methodName){
+    public ApiStruct filter(String methodName) {
+        Predicate<MethodStruct> methodStructPredicate = m -> m.getName().equals(methodName);
         List<ClassStruct> filtered = structs.stream()
                 .filter(cs -> cs.getMethods().stream().anyMatch(
-                        m -> m.getName().equals(methodName)
+                        methodStructPredicate
                 ))
+                .map(
+                        cs -> {
+                            SortedSet<MethodStruct> filteredMethods = cs.getMethods()
+                                    .stream()
+                                    .filter(methodStructPredicate)
+                                    .collect(
+                                        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(MethodStruct::getName)))
+                            );
+                            cs.setMethods(filteredMethods);
+                            return cs;
+                        }
+                )
                 .collect(Collectors.toList());
         return new ApiStruct(filtered);
     }
-
 }
