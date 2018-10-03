@@ -8,18 +8,16 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+//TODO: to streams
 public class ApiMapper {
 
     public static ApiStruct toStruct(List<Class> classes) {
-        ApiStruct api = new ApiStruct();
-        for (Class aClass : classes) {
-            ClassStruct classStruct = toStruct(aClass);
-            List<Method> methods = Arrays.asList(aClass.getMethods());
-            classStruct.getMethods().addAll(toStructMethod(methods));
-            api.getStructs().add(classStruct);
-        }
-        return api;
+        List<ClassStruct> structs = classes.stream()
+                .map(clazz -> toStruct(clazz))
+                .collect(Collectors.toList());
+        return new ApiStruct(structs);
     }
 
     private static List<MethodStruct> toStructMethod(List<Method> methods) {
@@ -32,18 +30,18 @@ public class ApiMapper {
     }
 
     private static MethodStruct toStruct(Method method) {
-        MethodStruct struct = new MethodStruct();
-        struct.setDescription(ReflectionUtils.getDescription(method));
-        struct.setName(method.getName());
-        struct.setParameters(Arrays.asList(method.getParameters()));
-        struct.getSignature().addAll(ReflectionUtils.getTypeWrappers(method));
-        return struct;
+        return new MethodStruct(
+                ReflectionUtils.getDescription(method),
+                method.getName(),
+                Arrays.asList(method.getParameters()),
+                ReflectionUtils.getTypeWrappers(method)
+        );
     }
 
     public static ClassStruct toStruct(Class api){
-        ClassStruct struct = new ClassStruct();
-        struct.setTag(ReflectionUtils.getTag(api));
-        struct.setPath(ReflectionUtils.getPath(api));
-        return struct;
+        return new ClassStruct(
+                ReflectionUtils.getTag(api),
+                ReflectionUtils.getPath(api),
+                toStructMethod(Arrays.asList(api.getMethods())));
     }
 }

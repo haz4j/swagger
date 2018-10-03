@@ -128,7 +128,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     private static TypeWrapper toTypeWrapper(TypeSignature parameterType) {
-        TypeWrapper typeWrapper = new TypeWrapper();
+        TypeWrapper typeWrapper = null;
 
         if (ArrayTypeSignature.class.isAssignableFrom(parameterType.getClass())) {
             ClassTypeSignature classTypeSignature = (ClassTypeSignature) arrayTypeSignatureComponentType.get(parameterType);
@@ -141,12 +141,15 @@ public class ReflectionUtils {
 
         for (Object o : paths) {
             SimpleClassTypeSignature signature = (SimpleClassTypeSignature) o;
-            typeWrapper.setName(signature.getName());
             TypeArgument[] typeArguments = signature.getTypeArguments();
+
+            List<TypeWrapper> childs = new ArrayList<>();
             for (TypeArgument typeArgument : typeArguments) {
                 TypeSignature typeSignature = (TypeSignature) typeArgument;
-                typeWrapper.getTypeWrappers().add(toTypeWrapper(typeSignature));
+                TypeWrapper child = toTypeWrapper(typeSignature);
+                childs.add(child);
             }
+            typeWrapper = new TypeWrapper(signature.getName(), childs);
         }
 
         return typeWrapper;

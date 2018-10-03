@@ -1,25 +1,21 @@
 package com.haz4j.swagger.structure;
 
-import lombok.Data;
+import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-@Data
-//TODO: make all entities immutable
+@Getter
 public class ClassStruct {
 
-    private Pair<String, String> tag;
-    private String path;
-    private List<MethodStruct> methods = new ArrayList<>();
+    private final Pair<String, String> tag;
+    private final String path;
+    private final List<MethodStruct> methods;
 
-    public ClassStruct(ClassStruct classStruct){
-        this.setTag(classStruct.getTag());
-        this.setPath(classStruct.getPath());
-        this.setMethods(classStruct.getMethods());
-    }
-
-    public ClassStruct() {
+    public ClassStruct(Pair<String, String> tag, String path, List<MethodStruct> methods) {
+        this.tag = tag;
+        this.path = path;
+        this.methods = Collections.unmodifiableList(methods);
     }
 }

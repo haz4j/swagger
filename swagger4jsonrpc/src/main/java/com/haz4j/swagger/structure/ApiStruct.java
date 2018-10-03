@@ -1,21 +1,19 @@
 package com.haz4j.swagger.structure;
 
-import lombok.Data;
+import lombok.Getter;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Data
+@Getter
 public class ApiStruct {
 
-    private List<ClassStruct> structs = new ArrayList<>();
+    private final List<ClassStruct> structs;
 
-    public ApiStruct(Collection<ClassStruct> structs) {
-        this.structs = new ArrayList<>(structs);
-    }
-
-    public ApiStruct() {
+    public ApiStruct(List<ClassStruct> structs) {
+        this.structs = Collections.unmodifiableList(structs);
     }
 
     public ApiStruct filter(String methodName) {
@@ -31,9 +29,7 @@ public class ApiStruct {
                                     .filter(methodStructPredicate)
                                     .collect(Collectors.toList());
 
-                            ClassStruct newClassStruct = new ClassStruct(cs);
-                            newClassStruct.setMethods(filteredMethods);
-                            return newClassStruct;
+                            return new ClassStruct(cs.getTag(), cs.getPath(), filteredMethods);
                         }
                 )
                 .collect(Collectors.toList());

@@ -275,7 +275,7 @@ public class JsonGenerator {
             TypeWrapper childTypeWrapper = null;
 
             if (typeWrapper != null) {
-                childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
+                childTypeWrapper = typeWrapper.getChilds().get(0);
             }
 
             node = createNodeForCollectionGeneric(typeOfCollectionElement, null, childTypeWrapper);
@@ -290,8 +290,8 @@ public class JsonGenerator {
             String defaultValue = defaultValueOf(keyClass);
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
-                childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
+            if (typeWrapper != null && typeWrapper.getChilds().size() > 1) {
+                childTypeWrapper = typeWrapper.getChilds().get(1);
             }
 
             node = createNodeForMapGeneric(valueClass, defaultValue, childTypeWrapper);
@@ -361,14 +361,14 @@ public class JsonGenerator {
         if (Collection.class.isAssignableFrom(type)) {
             TypeWrapper childTypeWrapper = null;
             if (typeWrapper != null) {
-                childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
+                childTypeWrapper = typeWrapper.getChilds().get(0);
             }
             valueNode = createNodeForCollectionGeneric(typeArgumentsArray[0], typeArgumentsArray, childTypeWrapper);
         } else if (Map.class.isAssignableFrom(type)) {
 
             TypeWrapper childTypeWrapper = null;
-            if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
-                childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
+            if (typeWrapper != null && typeWrapper.getChilds().size() > 1) {
+                childTypeWrapper = typeWrapper.getChilds().get(1);
             }
 
             Type keyClass = typeArgumentsArray[0];
@@ -392,8 +392,8 @@ public class JsonGenerator {
         }
 
         Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < typeWrapper.getTypeWrappers().size(); i++) {
-            map.put(typeParams.get(i).getName(), typeWrapper.getTypeWrappers().get(i).getName());
+        for (int i = 0; i < typeWrapper.getChilds().size(); i++) {
+            map.put(typeParams.get(i).getName(), typeWrapper.getChilds().get(i).getName());
         }
         return map;
     }
