@@ -28,6 +28,7 @@ public class ReflectionUtils {
     private static Field classTypeSignaturePath;
     private static Field arrayTypeSignatureComponentType;
     private static Field fieldSignature;
+    private static Field classGenericInfo;
 
     static {
         init();
@@ -39,10 +40,12 @@ public class ReflectionUtils {
         classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
         arrayTypeSignatureComponentType = ArrayTypeSignature.class.getDeclaredField("componentType");
         fieldSignature = Field.class.getDeclaredField("signature");
+        classGenericInfo = Class.class.getDeclaredField("genericInfo");
         methodSignature.setAccessible(true);
         classTypeSignaturePath.setAccessible(true);
         arrayTypeSignatureComponentType.setAccessible(true);
         fieldSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
+        classGenericInfo.setAccessible(true);
     }
 
     public static String getJsonRpcParam(Parameter parameter) {
@@ -87,9 +90,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static String getSignature(Field field) {
-        Field f = Field.class.getDeclaredField("signature");
-        f.setAccessible(true);
-        String signature = (String) f.get(field); //for "R" it will be "TR;"
+        String signature = (String) fieldSignature.get(field); //for "R" it will be "TR;"
         if (signature != null) {
             return signature.substring(1, signature.length() - 1);
         } else {
@@ -109,8 +110,6 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static List<TypeWrapper> getTypeWrappers(Method method) {
-
-        //TODO: перенести все это выше
         String signature = (String) methodSignature.get(method);
         if (signature == null) {
             return new ArrayList<>();
@@ -164,9 +163,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static List<TypeVariable<?>> getTypeParams(Class<?> type) {
-        Field f = Class.class.getDeclaredField("genericInfo");
-        f.setAccessible(true); //TODO: на уровень выше
-        ClassRepository classRepository = (ClassRepository) f.get(type);
+        ClassRepository classRepository = (ClassRepository) classGenericInfo.get(type);
         if (classRepository == null) {
             return new ArrayList<>();
         }
