@@ -9,17 +9,13 @@ import java.util.stream.Collectors;
 @Data
 public class ApiStruct {
 
-    private Comparator<ClassStruct> comparator = Comparator.comparing(ClassStruct::getPath);
-    private SortedSet<ClassStruct> structs = new TreeSet<>(comparator);
+    private List<ClassStruct> structs = new ArrayList<>();
 
     public ApiStruct(Collection<ClassStruct> structs) {
-        TreeSet<ClassStruct> newStr = new TreeSet<>(comparator);
-        newStr.addAll(structs);
-        this.structs = newStr;
+        this.structs = new ArrayList<>(structs);
     }
 
     public ApiStruct() {
-
     }
 
     public ApiStruct filter(String methodName) {
@@ -30,12 +26,10 @@ public class ApiStruct {
                 ))
                 .map(
                         cs -> {
-                            SortedSet<MethodStruct> filteredMethods = cs.getMethods()
+                            List<MethodStruct> filteredMethods = cs.getMethods()
                                     .stream()
                                     .filter(methodStructPredicate)
-                                    .collect(
-                                        Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(MethodStruct::getName)))
-                            );
+                                    .collect(Collectors.toList());
 
                             ClassStruct newClassStruct = new ClassStruct(cs);
                             newClassStruct.setMethods(filteredMethods);
