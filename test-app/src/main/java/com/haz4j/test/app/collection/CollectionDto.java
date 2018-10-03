@@ -32,7 +32,4 @@ public class CollectionDto {
 
     private ArrayList<List<Entry>> entriesOfEntries;
 
-    //TODO: add raw collection
-
-    //TODO: add collection of objects
 }

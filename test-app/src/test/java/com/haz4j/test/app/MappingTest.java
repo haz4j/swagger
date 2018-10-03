@@ -89,7 +89,6 @@ public class MappingTest {
     }
 
     @Test
-    //TODO: прокликать
     public void genericTest() {
         docket = Docket.builder()
                 .host("localhost")
