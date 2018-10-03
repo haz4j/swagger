@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-//TODO: rewrite to several entities
 public class CollectionDto {
 
     private String name;
@@ -33,7 +32,4 @@ public class CollectionDto {
 
     private ArrayList<List<Entry>> entriesOfEntries;
 
-    //TODO: add raw collection
-
-    //TODO: add collection of objects
 }

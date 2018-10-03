@@ -11,7 +11,6 @@ import java.util.Map;
 @Api(tags = "generics", value = "Api generics")
 public interface GenericApi {
 
-    //TODO: и сделать, чтобы параметры были не только в методе, а и в сущности и вспомнить какие были дженерики в другом проекте
     GenericDto generic(@JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry2, Entry3> genericDto);
 
     List<GenericDto<Entry1, Entry2, Entry3>> listOfGenerics(@JsonRpcParam(value = "generic_dto") List<GenericDto<Entry1, Entry2, Entry3>> genericDto);
@@ -33,7 +32,10 @@ public interface GenericApi {
             @JsonRpcParam(value = "generic_dto") GenericDto<Entry1, Entry3, Entry2>[] genericDto
     );
 
-//    Entry5 save7(
-//            @JsonRpcParam(value = "entry") Entry5 entry
-//    );
+    GenericDto severalGenerics(
+            @JsonRpcParam(value = "generic_dto_1") GenericDto<Entry1, Entry2, Entry3> genericDto1,
+            @JsonRpcParam(value = "generic_dto_2") GenericDto1<Entry3> genericDto2,
+            @JsonRpcParam(value = "generic_dto_3") GenericDto2<Entry2, Entry1> genericDto3
+    );
+
 }

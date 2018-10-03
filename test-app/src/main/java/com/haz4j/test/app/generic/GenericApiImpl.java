@@ -41,27 +41,12 @@ public class GenericApiImpl implements GenericApi {
         return genericDto;
     }
 
-//    @Override
-//    public Entry5 save7(Entry5 entry) {
-//        return entry;
-//    }
-
-    //TODO: добавить
-    /*
     @Override
-    public GenericDto generic(GenericDto1<Entry1, Entry2, Entry3> genericDto1,
-
-    GenericDto2<Entry3> genericDto2,
-
-    GenericDto3<Entry2, Entry1> genericDto3
-
+    public GenericDto severalGenerics(
+            GenericDto<Entry1, Entry2, Entry3> genericDto1,
+            GenericDto1<Entry3> genericDto2,
+            GenericDto2<Entry2, Entry1> genericDto3
     ) {
-        return genericDto;
+        return genericDto1;
     }
-    //TODO: добавить вложенные gererics
-
-     */
-
-
-
 }

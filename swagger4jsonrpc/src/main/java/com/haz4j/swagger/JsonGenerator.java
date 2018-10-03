@@ -386,7 +386,6 @@ public class JsonGenerator {
         return valueNode;
     }
 
-
     private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper typeWrapper) {
         if (typeWrapper == null) {
             return new HashMap<>();

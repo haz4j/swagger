@@ -22,8 +22,4 @@ public class MapDto {
 
     private Map<Integer, List<Map<String, Map<Double, Map<Integer, List<Entry>>>>>> veryComplexInternalMap;
 
-    //TODO: add raw map
-
-    //TODO: add object map
-
 }
