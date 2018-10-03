@@ -237,10 +237,11 @@ public class JsonGenerator {
                 Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
 
                 return createPropertyFor((Class) rawType, typesMap);
+            } else {
+                return createPropertyFor(type, null);
             }
 
             //TODO: а вот сюда тоже по уму должен typeWrapper передаваться
-            return createPropertyFor(type, null);
         }
     }
 
@@ -283,25 +284,30 @@ public class JsonGenerator {
 
             String fieldName = ReflectionUtils.getJsonProperty(field);
 
+            TypeWrapper typeWrapper = null;  //TODO: странно
+
             Class<?> type = field.getType();
+
+            ObjectNode node = null;
+
             if (Collection.class.isAssignableFrom(type)) {
+
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
 
                 Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
 
                 TypeWrapper childTypeWrapper = null;
-                TypeWrapper typeWrapper = null;  //TODO: странно
 
                 if (typeWrapper != null) {
                     childTypeWrapper = typeWrapper.getTypeWrappers().get(0);
                 }
 
-                ObjectNode arrayNode = createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
+                node = createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
 
-                properties.set(fieldName, arrayNode);
+                properties.set(fieldName, node);
             } else if (type.isArray()) {
-                ObjectNode arrayNode = createArrayNode(type.getComponentType(), null, null);
-                properties.set(fieldName, arrayNode);
+                node = createArrayNode(type.getComponentType(), null, null);
+                properties.set(fieldName, node);
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
 
@@ -310,29 +316,27 @@ public class JsonGenerator {
                 String defaultValue = defaultValueOf(keyClass);
 
                 TypeWrapper childTypeWrapper = null;
-                TypeWrapper typeWrapper = null; //TODO: странно
                 if (typeWrapper != null && typeWrapper.getTypeWrappers().size() > 1) {
                     childTypeWrapper = typeWrapper.getTypeWrappers().get(1);
                 }
 
-                ObjectNode mapNode = createNodeForMap(valueClass, defaultValue, childTypeWrapper);
+                node = createNodeForMap(valueClass, defaultValue, childTypeWrapper);
 
-                properties.set(fieldName, mapNode);
+                properties.set(fieldName, node);
             } else {
                 //field class has no suitable api and I don't wont to use reflection here
                 //so we will parse string like "private T ru.nic.rates.core.domain.entity.EntityFromFile.entity"
                 //to check if this field has generic
                 Class realType = ReflectionUtils.getRealType(field, genericTypeArgs);
 
-                ObjectNode property;
                 if (realType != null) {
                     Class<?> realTypeClass = TypeUtils.getRawType(realType, null);
-                    property = createPropertyFor(realTypeClass, null);
+                    node = createPropertyFor(realTypeClass, null);
                 } else {
-                    property = createPropertyFor(type, null);
+                    node = createPropertyFor(type, null);
                 }
 //                вот это вниз перенести и смерджитьс  createParamFromMethodParameter
-                properties.set(fieldName, property);
+                properties.set(fieldName, node);
             }
         }
         entityNode.set("properties", properties);
