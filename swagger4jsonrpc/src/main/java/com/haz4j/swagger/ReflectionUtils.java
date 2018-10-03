@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class ReflectionUtils {
@@ -117,13 +118,10 @@ public class ReflectionUtils {
         MethodTypeSignature methodTypeSignature = SignatureParser.make().parseMethodSig(signature);
 
         TypeSignature[] parameterTypes = methodTypeSignature.getParameterTypes();
-        List<TypeWrapper> allSignatures = new ArrayList<>();
 
-        for (TypeSignature parameterType : parameterTypes) {
-            allSignatures.add(toTypeWrapper(parameterType));
-        }
-
-        return allSignatures;
+        return Arrays.stream(parameterTypes)
+                .map(p -> toTypeWrapper(p))
+                .collect(Collectors.toList());
     }
 
     @SneakyThrows
@@ -143,12 +141,10 @@ public class ReflectionUtils {
             SimpleClassTypeSignature signature = (SimpleClassTypeSignature) o;
             TypeArgument[] typeArguments = signature.getTypeArguments();
 
-            List<TypeWrapper> childs = new ArrayList<>();
-            for (TypeArgument typeArgument : typeArguments) {
-                TypeSignature typeSignature = (TypeSignature) typeArgument;
-                TypeWrapper child = toTypeWrapper(typeSignature);
-                childs.add(child);
-            }
+            List<TypeWrapper> childs = Arrays.stream(typeArguments)
+                    .map(ta -> toTypeWrapper((TypeSignature) ta))
+                    .collect(Collectors.toList());
+
             typeWrapper = new TypeWrapper(signature.getName(), childs);
         }
 
@@ -169,7 +165,7 @@ public class ReflectionUtils {
     @SneakyThrows
     public static List<TypeVariable<?>> getTypeParams(Class<?> type) {
         Field f = Class.class.getDeclaredField("genericInfo");
-        f.setAccessible(true);
+        f.setAccessible(true); //TODO: на уровень выше
         ClassRepository classRepository = (ClassRepository) f.get(type);
         if (classRepository == null) {
             return new ArrayList<>();

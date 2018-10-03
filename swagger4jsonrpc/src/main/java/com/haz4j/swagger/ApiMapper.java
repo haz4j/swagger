@@ -5,12 +5,10 @@ import com.haz4j.swagger.structure.ClassStruct;
 import com.haz4j.swagger.structure.MethodStruct;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-//TODO: to streams
 public class ApiMapper {
 
     public static ApiStruct toStruct(List<Class> classes) {
@@ -21,12 +19,9 @@ public class ApiMapper {
     }
 
     private static List<MethodStruct> toStructMethod(List<Method> methods) {
-        List<MethodStruct> structList = new ArrayList<>();
-        for (Method method : methods) {
-            MethodStruct methodStruct = toStruct(method);
-            structList.add(methodStruct);
-        }
-        return structList;
+        return methods.stream()
+                .map(method -> toStruct(method))
+                .collect(Collectors.toList());
     }
 
     private static MethodStruct toStruct(Method method) {
@@ -38,7 +33,7 @@ public class ApiMapper {
         );
     }
 
-    public static ClassStruct toStruct(Class api){
+    public static ClassStruct toStruct(Class api) {
         return new ClassStruct(
                 ReflectionUtils.getTag(api),
                 ReflectionUtils.getPath(api),

@@ -461,9 +461,7 @@ public class JsonGenerator {
         property.put("type", "string");
         ArrayNode enumValues = mapper.createArrayNode();
         List<?> enumConstants = enum2list(type);
-        for (Object enumConstant : enumConstants) {
-            enumValues.add(enumConstant.toString());
-        }
+        enumConstants.forEach(ec -> enumValues.add(ec.toString()));
         property.set("enum", enumValues);
         return property;
     }

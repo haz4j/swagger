@@ -13,10 +13,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -81,21 +78,13 @@ public class SwaggerListener implements ApplicationListener<ContextRefreshedEven
         //These are beans-implementations, not interfaces
         Collection<Object> beansImpls = context.getBeansWithAnnotation(Api.class).values();
 
-        List<Class> apis = new ArrayList<>();
-
         // get target class from each bean
         // get interfaces from target class
         // filter interface annotated with @Api
-        for (Object beansImpl : beansImpls) {
-            Class classImpl = getRealClass(beansImpl);
-            Class[] interfaces = classImpl.getInterfaces();
-            for (Class interfacesItem : interfaces) {
-                if (interfacesItem.getAnnotation(Api.class) != null) {
-                    apis.add(interfacesItem);
-                }
-            }
-        }
-        return apis;
+        return beansImpls.stream()
+                .flatMap(beansImpl -> Arrays.stream(getRealClass(beansImpl).getInterfaces()))
+                .filter(interfacesItem -> interfacesItem.getAnnotation(Api.class) != null)
+                .collect(Collectors.toList());
     }
 
     private Class<?> getRealClass(Object beansImpl) {
