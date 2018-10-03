@@ -195,7 +195,7 @@ public class JsonGenerator {
 
         if (Collection.class.isAssignableFrom(type)) {
 
-            ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+            ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();  //этo
 
             Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
 
@@ -292,7 +292,7 @@ public class JsonGenerator {
 
             if (Collection.class.isAssignableFrom(type)) {
 
-                ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
+                ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType(); //это
 
                 Type typeOfCollectionElement = parameterizedType.getActualTypeArguments()[0];
 
@@ -304,10 +304,8 @@ public class JsonGenerator {
 
                 node = createArrayNode(typeOfCollectionElement, null, childTypeWrapper);
 
-                properties.set(fieldName, node);
             } else if (type.isArray()) {
                 node = createArrayNode(type.getComponentType(), null, null);
-                properties.set(fieldName, node);
             } else if (Map.class.isAssignableFrom(type)) {
                 ParameterizedType parameterizedType = (ParameterizedType) field.getGenericType();
 
@@ -322,23 +320,22 @@ public class JsonGenerator {
 
                 node = createNodeForMap(valueClass, defaultValue, childTypeWrapper);
 
-                properties.set(fieldName, node);
             } else {
-                //field class has no suitable api and I don't wont to use reflection here
-                //so we will parse string like "private T ru.nic.rates.core.domain.entity.EntityFromFile.entity"
-                //to check if this field has generic
-                Class realType = ReflectionUtils.getRealType(field, genericTypeArgs);
 
+                Class realType = ReflectionUtils.getRealType(field, genericTypeArgs);
                 if (realType != null) {
-                    Class<?> realTypeClass = TypeUtils.getRawType(realType, null);
-                    node = createPropertyFor(realTypeClass, null);
+                    node = createPropertyFor(realType, null);
                 } else {
                     node = createPropertyFor(type, null);
                 }
-//                вот это вниз перенести и смерджитьс  createParamFromMethodParameter
-                properties.set(fieldName, node);
+
             }
+
+            properties.set(fieldName, node);
         }
+
+
+
         entityNode.set("properties", properties);
         definitions.put(refName, entityNode);
     }

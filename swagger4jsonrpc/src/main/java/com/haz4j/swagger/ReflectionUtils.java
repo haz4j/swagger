@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import sun.reflect.generics.parser.SignatureParser;
 import sun.reflect.generics.repository.ClassRepository;
@@ -77,7 +78,8 @@ public class ReflectionUtils {
 
         if (genericTypeArgs != null && genericTypeArgs.get(signature) != null) {
             String className = genericTypeArgs.get(signature);
-            return Class.forName(className);
+            Class<?> realClass = Class.forName(className);
+            return TypeUtils.getRawType(realClass, null);
         }
         return null;
     }
