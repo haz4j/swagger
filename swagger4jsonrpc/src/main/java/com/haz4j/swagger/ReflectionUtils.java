@@ -44,7 +44,7 @@ public class ReflectionUtils {
         methodSignature.setAccessible(true);
         classTypeSignaturePath.setAccessible(true);
         arrayTypeSignatureComponentType.setAccessible(true);
-        fieldSignature.setAccessible(true); //TODO: по-хорошему нужно за собой закрывать доступ
+        fieldSignature.setAccessible(true);
         classGenericInfo.setAccessible(true);
     }
 

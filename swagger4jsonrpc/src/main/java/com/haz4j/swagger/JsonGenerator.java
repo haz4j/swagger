@@ -1,12 +1,13 @@
 package com.haz4j.swagger;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.haz4j.swagger.structure.*;
+import com.haz4j.swagger.structure.ApiStruct;
+import com.haz4j.swagger.structure.MethodStruct;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -36,6 +37,7 @@ public class JsonGenerator {
 
     private Map<String, JsonNode> definitions;
 
+    @SneakyThrows
     public String createJson(String hostName, ApiStruct apis) {
 
         definitions = new HashMap<>();
@@ -78,12 +80,7 @@ public class JsonGenerator {
         definitions.forEach((definitionName, node) -> definitionsNode.set(definitionName, node));
         document.set("definitions", definitionsNode);
 
-        try {
-//            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(document);
-            return mapper.writeValueAsString(document);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return mapper.writeValueAsString(document);
     }
 
     private ObjectNode createMethod(String tagName, MethodStruct method, String operationId) {
@@ -311,7 +308,6 @@ public class JsonGenerator {
         } else {
             //collection or map
             Class<?> rawType = TypeUtils.getRawType(type, null);
-            //TODO: проверить тип теперь кастингом
             arrayNode = createNodeForCollection(rawType, ((ParameterizedTypeImpl) type).getActualTypeArguments(), typeWrapper);
         }
         return arrayNode;
