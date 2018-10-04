@@ -183,30 +183,28 @@ public class JsonGenerator {
     }
 
     private JsonNode createParamFromMethodParameter(Parameter parameter, TypeWrapper typeWrapper) {
-        log.debug("createParamFromMethodParameter: parameter - " + parameter+ ", typeWrapper - " + typeWrapper);
+        log.debug("createParamFromMethodParameter: parameter - " + parameter + ", typeWrapper - " + typeWrapper);
 
         Class<?> type = parameter.getType();
 
         Supplier<ParameterizedType> getParameterizedType = () -> (ParameterizedType) parameter.getParameterizedType();
 
-        ObjectNode node = createCollectionOrMapNodeWrapper(typeWrapper, type, getParameterizedType);
+        return createCollectionOrMapNodeWrapper(typeWrapper, type, getParameterizedType)
+                .orElseGet(() -> {
+                    if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
+                            parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
+                        ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
 
-        if (node == null) {
-            if (parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedType.class) ||
-                    parameter.getParameterizedType().getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
-                ParameterizedType parameterizedType = (ParameterizedType) parameter.getParameterizedType();
+                        Type rawType = parameterizedType.getRawType();
 
-                Type rawType = parameterizedType.getRawType();
+                        List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
+                        Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
 
-                List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
-                Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
-
-                node = createPropertyFor((Class) rawType, typesMap);
-            } else {
-                node = createPropertyFor(type, null);
-            }
-        }
-        return node;
+                        return createPropertyFor((Class) rawType, typesMap);
+                    } else {
+                        return createPropertyFor(type, null);
+                    }
+                });
     }
 
     private void createEntityDefinition(Class<?> entityClass, /*@NotNull*/ Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
@@ -240,14 +238,13 @@ public class JsonGenerator {
 
             Supplier<ParameterizedType> getParameterizedType = () -> (ParameterizedType) field.getGenericType();
 
-            ObjectNode node = createCollectionOrMapNodeWrapper(null, type, getParameterizedType);
+            ObjectNode node = createCollectionOrMapNodeWrapper(null, type, getParameterizedType)
+                    .orElseGet(() -> {
+                        Optional<Class> realType = ReflectionUtils.getRealType(field, genericTypeArgs);
 
-            if (node == null) {
-                Optional<Class> realType = ReflectionUtils.getRealType(field, genericTypeArgs);
-
-                node = realType.map(rt -> createPropertyFor(rt, null))
-                        .orElseGet(() -> createPropertyFor(type, null));
-            }
+                        return realType.map(rt -> createPropertyFor(rt, null))
+                                .orElseGet(() -> createPropertyFor(type, null));
+                    });
 
             properties.set(fieldName, node);
         }
@@ -256,7 +253,7 @@ public class JsonGenerator {
         definitions.put(refName, entityNode);
     }
 
-    private ObjectNode createCollectionOrMapNodeWrapper(TypeWrapper typeWrapper, Class<?> type, Supplier<ParameterizedType> getParameterizedType) {
+    private Optional<ObjectNode> createCollectionOrMapNodeWrapper(TypeWrapper typeWrapper, Class<?> type, Supplier<ParameterizedType> getParameterizedType) {
         log.debug("createCollectionOrMapNodeWrapper: typeWrapper - " + typeWrapper + ", type - " + type + ", getParameterizedType - " + getParameterizedType);
         ObjectNode node = null;
         if (Collection.class.isAssignableFrom(type)) {
@@ -290,7 +287,7 @@ public class JsonGenerator {
             node = createNodeForMapGeneric(valueClass, defaultValue, childTypeWrapper);
 
         }
-        return node;
+        return Optional.ofNullable(node);
     }
 
     //type - element of collection

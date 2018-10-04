@@ -36,7 +36,7 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static void init(){
+    public static void init() {
         log.debug("init");
         methodSignature = Method.class.getDeclaredField("signature");
         classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
@@ -78,7 +78,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static Optional<Class> getRealType(Field field, /*@NotNull */Map<String, String> genericTypeArgs) {
-        log.debug("getRealType: field - " + field+ ", genericTypeArgs - " + genericTypeArgs);
+        log.debug("getRealType: field - " + field + ", genericTypeArgs - " + genericTypeArgs);
         // signature = TR;
         Optional<String> signature = ReflectionUtils.getSignature(field);
 
@@ -102,13 +102,11 @@ public class ReflectionUtils {
 
     public static String getDescription(Method method) {
         log.debug("getDescription: method - " + method);
-        String description = "";
 
-        ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
-        if (apiOperation != null) {
-            description = apiOperation.value();
-        }
-        return description;
+        return Optional
+                .ofNullable(method.getAnnotation(ApiOperation.class))
+                .map(ApiOperation::value)
+                .orElse("");
     }
 
     @SneakyThrows
@@ -169,13 +167,10 @@ public class ReflectionUtils {
     @SneakyThrows
     public static List<TypeVariable<?>> getTypeParams(Class<?> type) {
         log.debug("getTypeParams: type - " + type);
-        ClassRepository classRepository = (ClassRepository) classGenericInfo.get(type);
-        if (classRepository == null) {
-            return new ArrayList<>();
-        }
-
-        TypeVariable<?>[] typeParameters = classRepository.getTypeParameters();
-        return Arrays.asList(typeParameters);
+        return Optional.ofNullable((ClassRepository) classGenericInfo.get(type))
+                .map(classRepository -> classRepository.getTypeParameters())
+                .map(tp -> Arrays.asList(tp))
+                .orElse(new ArrayList<>());
     }
 
     public static Pair<String, String> getTag(Class api) {
