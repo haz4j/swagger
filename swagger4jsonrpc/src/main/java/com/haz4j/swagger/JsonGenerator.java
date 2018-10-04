@@ -14,6 +14,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
@@ -208,7 +209,7 @@ public class JsonGenerator {
         return node;
     }
 
-    private void createEntityDefinition(Class<?> entityClass, Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
+    private void createEntityDefinition(Class<?> entityClass, /*@NotNull*/ Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("createParamFromMethodParameter: entityClass - " + entityClass + ", genericTypeArgs - " + genericTypeArgs + ", typeArguments - " + genericTypeArgs);
 
         String refName = getRefName(entityClass, genericTypeArgs, typeArguments);
@@ -242,12 +243,10 @@ public class JsonGenerator {
             ObjectNode node = createCollectionOrMapNodeWrapper(null, type, getParameterizedType);
 
             if (node == null) {
-                Class realType = ReflectionUtils.getRealType(field, genericTypeArgs);
-                if (realType != null) {
-                    node = createPropertyFor(realType, null);
-                } else {
-                    node = createPropertyFor(type, null);
-                }
+                Optional<Class> realType = ReflectionUtils.getRealType(field, genericTypeArgs);
+
+                node = realType.map(rt -> createPropertyFor(rt, null))
+                        .orElseGet(() -> createPropertyFor(type, null));
             }
 
             properties.set(fieldName, node);

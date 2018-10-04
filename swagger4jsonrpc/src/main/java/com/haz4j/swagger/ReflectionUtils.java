@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.TypeUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 import sun.reflect.generics.parser.SignatureParser;
 import sun.reflect.generics.repository.ClassRepository;
 import sun.reflect.generics.tree.*;
@@ -76,31 +77,27 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static Class getRealType(Field field, Map<String, String> genericTypeArgs) {
+    public static Optional<Class> getRealType(Field field, /*@NotNull */Map<String, String> genericTypeArgs) {
         log.debug("getRealType: field - " + field+ ", genericTypeArgs - " + genericTypeArgs);
         // signature = TR;
-        String signature = ReflectionUtils.getSignature(field);
-        if (signature == null) {
-            return null;
-        }
+        Optional<String> signature = ReflectionUtils.getSignature(field);
 
-        if (genericTypeArgs != null && genericTypeArgs.get(signature) != null) {
-            String className = genericTypeArgs.get(signature);
-            Class<?> realClass = Class.forName(className);
-            return TypeUtils.getRawType(realClass, null);
-        }
-        return null;
+        return signature.map(s -> genericTypeArgs.get(signature.get()))
+                .map(className -> {
+                    try {
+                        return Class.forName(className);
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(realClass -> TypeUtils.getRawType(realClass, null));
     }
 
     @SneakyThrows
-    public static String getSignature(Field field) {
+    public static Optional<String> getSignature(Field field) {
         log.debug("getSignature: field - " + field);
         String signature = (String) fieldSignature.get(field); //for "R" it will be "TR;"
-        if (signature != null) {
-            return signature.substring(1, signature.length() - 1);
-        } else {
-            return null;
-        }
+        return Optional.ofNullable(signature).map(s -> signature.substring(1, signature.length() - 1));
     }
 
     public static String getDescription(Method method) {

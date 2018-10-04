@@ -20,7 +20,7 @@ public class MappingTest {
     @Autowired
     private SwaggerListener swaggerListener;
 
-    private Docket docket = null;
+    private Docket docket;
 
     @Test
     public void arrayTest() {
