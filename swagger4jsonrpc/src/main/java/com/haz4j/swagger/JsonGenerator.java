@@ -158,10 +158,6 @@ public class JsonGenerator {
     private ObjectNode createEntityRef(MethodStruct method) {
         log.debug("createEntityRef: method - " + method);
 
-        if ((method.getParameters().size() == 0)) {
-            return null;
-        }
-
         ObjectNode definitionNode = mapper.createObjectNode();
         definitionNode.put("type", "object");
         ObjectNode propertiesNode = mapper.createObjectNode();

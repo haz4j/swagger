@@ -9,6 +9,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 import java.util.Collection;
+import java.util.List;
 
 
 @JsonRpcService("/v1/collection")
@@ -20,5 +21,7 @@ public interface CollectionApi {
     })
     @ApiOperation(value = "Save entity")
     CollectionDto save(@JsonRpcParam(value = "collection_dto") CollectionDto collectionDto, @JsonRpcParam(value = "collection_dtos") Collection<CollectionDto> collectionDtos);
+
+    List<CollectionDto> listAll();
 
 }

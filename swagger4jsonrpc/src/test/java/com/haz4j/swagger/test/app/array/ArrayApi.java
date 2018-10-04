@@ -19,4 +19,6 @@ public interface ArrayApi {
     @ApiOperation(value = "Save entity")
     ArrayDto save(@JsonRpcParam(value = "array_dto") ArrayDto arrayDto, @JsonRpcParam(value = "array_dtos") ArrayDto[] arrayDtos);
 
+
+
 }
