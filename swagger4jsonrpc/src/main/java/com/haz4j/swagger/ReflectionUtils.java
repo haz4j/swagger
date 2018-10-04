@@ -36,6 +36,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static void init(){
+        log.debug("init");
         methodSignature = Method.class.getDeclaredField("signature");
         classTypeSignaturePath = ClassTypeSignature.class.getDeclaredField("path");
         arrayTypeSignatureComponentType = ArrayTypeSignature.class.getDeclaredField("componentType");
@@ -49,6 +50,7 @@ public class ReflectionUtils {
     }
 
     public static String getJsonRpcParam(Parameter parameter) {
+        log.debug("getJsonRpcParam: parameter - " + parameter);
         JsonRpcParam[] jsonRpcParams = parameter.getAnnotationsByType(JsonRpcParam.class);
         if (jsonRpcParams != null
                 && jsonRpcParams.length > 0
@@ -62,6 +64,7 @@ public class ReflectionUtils {
     }
 
     public static String getJsonProperty(Field field) {
+        log.debug("getJsonProperty: field - " + field);
         JsonProperty[] jsonProperties = field.getAnnotationsByType(JsonProperty.class);
         if (jsonProperties != null
                 && jsonProperties.length > 0
@@ -74,6 +77,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static Class getRealType(Field field, Map<String, String> genericTypeArgs) {
+        log.debug("getRealType: field - " + field+ ", genericTypeArgs - " + genericTypeArgs);
         // signature = TR;
         String signature = ReflectionUtils.getSignature(field);
         if (signature == null) {
@@ -90,6 +94,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static String getSignature(Field field) {
+        log.debug("getSignature: field - " + field);
         String signature = (String) fieldSignature.get(field); //for "R" it will be "TR;"
         if (signature != null) {
             return signature.substring(1, signature.length() - 1);
@@ -99,6 +104,7 @@ public class ReflectionUtils {
     }
 
     public static String getDescription(Method method) {
+        log.debug("getDescription: method - " + method);
         String description = "";
 
         ApiOperation apiOperation = method.getAnnotation(ApiOperation.class);
@@ -110,6 +116,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static List<TypeWrapper> getTypeWrappers(Method method) {
+        log.debug("getTypeWrappers: method - " + method);
         String signature = (String) methodSignature.get(method);
         if (signature == null) {
             return new ArrayList<>();
@@ -125,6 +132,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     private static TypeWrapper toTypeWrapper(TypeSignature parameterType) {
+        log.debug("toTypeWrapper: parameterType - " + parameterType);
         TypeWrapper typeWrapper = null;
 
         if (ArrayTypeSignature.class.isAssignableFrom(parameterType.getClass())) {
@@ -163,6 +171,7 @@ public class ReflectionUtils {
 
     @SneakyThrows
     public static List<TypeVariable<?>> getTypeParams(Class<?> type) {
+        log.debug("getTypeParams: type - " + type);
         ClassRepository classRepository = (ClassRepository) classGenericInfo.get(type);
         if (classRepository == null) {
             return new ArrayList<>();
@@ -173,6 +182,7 @@ public class ReflectionUtils {
     }
 
     public static Pair<String, String> getTag(Class api) {
+        log.debug("getTag: api - " + api);
         Api apiAnnotation = (Api) api.getAnnotation(Api.class);
         if (apiAnnotation != null && apiAnnotation.tags().length > 0) {
             String tagName = apiAnnotation.tags()[0];

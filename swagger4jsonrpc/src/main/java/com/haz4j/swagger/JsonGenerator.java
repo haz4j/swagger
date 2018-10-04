@@ -39,7 +39,7 @@ public class JsonGenerator {
 
     @SneakyThrows
     public String createJson(String hostName, ApiStruct apis) {
-
+        log.debug("createJson: hostName - " + hostName + ", apis - " + apis);
         definitions = new HashMap<>();
 
         ArrayNode tagsArray = mapper.createArrayNode();
@@ -84,7 +84,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createMethod(String tagName, MethodStruct method, String operationId) {
-        log.debug("createMethod - " + method);
+        log.debug("createMethod: tagName - " + tagName + ", method - " + method + ", operationId - " + operationId);
         ObjectNode objectNode = mapper.createObjectNode();
 
         String description = method.getDescription();
@@ -123,7 +123,7 @@ public class JsonGenerator {
 
     //generate method scheme with links to entities definitions
     private ObjectNode createMethodScheme(MethodStruct method) {
-        log.debug("createMethodScheme - " + method);
+        log.debug("createMethodScheme: method - " + method);
 
         ObjectNode definitionNode = mapper.createObjectNode();
         definitionNode.put("type", "object");
@@ -156,7 +156,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createEntityRef(MethodStruct method) {
-        log.debug("createEntityRef - " + method);
+        log.debug("createEntityRef: method - " + method);
 
         if ((method.getParameters().size() == 0)) {
             return null;
@@ -186,7 +186,7 @@ public class JsonGenerator {
     }
 
     private JsonNode createParamFromMethodParameter(Parameter parameter, TypeWrapper typeWrapper) {
-        log.debug("createParamFromMethodParameter - " + parameter);
+        log.debug("createParamFromMethodParameter: parameter - " + parameter+ ", typeWrapper - " + typeWrapper);
 
         Class<?> type = parameter.getType();
 
@@ -213,7 +213,7 @@ public class JsonGenerator {
     }
 
     private void createEntityDefinition(Class<?> entityClass, Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
-        log.debug("createEntityDefinition: entityClass - " + entityClass + ", typeArguments - " + typeArguments);
+        log.debug("createParamFromMethodParameter: entityClass - " + entityClass + ", genericTypeArgs - " + genericTypeArgs + ", typeArguments - " + genericTypeArgs);
 
         String refName = getRefName(entityClass, genericTypeArgs, typeArguments);
 
@@ -262,6 +262,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createCollectionOrMapNodeWrapper(TypeWrapper typeWrapper, Class<?> type, Supplier<ParameterizedType> getParameterizedType) {
+        log.debug("createCollectionOrMapNodeWrapper: typeWrapper - " + typeWrapper + ", type - " + type + ", getParameterizedType - " + getParameterizedType);
         ObjectNode node = null;
         if (Collection.class.isAssignableFrom(type)) {
 
@@ -299,7 +300,7 @@ public class JsonGenerator {
 
     //type - element of collection
     private ObjectNode createNodeForCollectionGeneric(Type type, Type[] typeArgumentsArray, TypeWrapper typeWrapper) {
-        log.debug("createNodeForCollectionGeneric: type - " + type);
+        log.debug("createNodeForCollectionGeneric: type - " + type + ", typeArgumentsArray - " + typeArgumentsArray + ", typeWrapper - " + typeWrapper);
 
         ObjectNode arrayNode;
         if (Class.class.isAssignableFrom(type.getClass())) {
@@ -325,6 +326,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createNodeForMapGeneric(Type valueClass, String nextDefaultValue, TypeWrapper typeWrapper) {
+        log.debug("createNodeForMapGeneric: valueClass - " + valueClass + ", nextDefaultValue - " + typeWrapper);
         ObjectNode items;
         if (valueClass.getClass().isAssignableFrom(ParameterizedType.class) ||
                 valueClass.getClass().isAssignableFrom(ParameterizedTypeImpl.class)) {
@@ -339,7 +341,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createNodeForMap(String defaultValue, Class<?> type, Type[] typeArgumentsArray, TypeWrapper typeWrapper) {
-        log.debug("createNodeForMapGeneric: defaultValue - " + defaultValue + ", type - " + type);
+        log.debug("createNodeForMap: defaultValue - " + defaultValue + ", type - " + type + ", typeArgumentsArray - " + typeArgumentsArray + ", typeWrapper - " + typeWrapper);
 
         ObjectNode mapNode = mapper.createObjectNode();
         mapNode.put("type", "object");
@@ -353,6 +355,7 @@ public class JsonGenerator {
     }
 
     private ObjectNode createNodeForElement(Class<?> type, Type[] typeArgumentsArray, TypeWrapper typeWrapper) {
+        log.debug("createNodeForElement: type - " + type + ", typeArgumentsArray - " + typeArgumentsArray + ", typeWrapper - " + typeWrapper);
         ObjectNode valueNode;
         if (Collection.class.isAssignableFrom(type)) {
             TypeWrapper childTypeWrapper = null;
@@ -383,6 +386,7 @@ public class JsonGenerator {
     }
 
     private Map<String, String> toTypesMap(List<TypeVariable<?>> typeParams, TypeWrapper typeWrapper) {
+        log.debug("createNodeForElement: typeParams - " + typeParams + ", typeWrapper - " + typeWrapper);
         if (typeWrapper == null) {
             return new HashMap<>();
         }
@@ -481,7 +485,7 @@ public class JsonGenerator {
     }
 
     private static String getRefName(Class<?> entityClass, Map<String, String> actualTypeArguments, Map<TypeVariable<?>, Type> typeArguments) {
-        log.debug("getRefName: entityClass - " + entityClass + ", typeArguments - " + typeArguments);
+        log.debug("getRefName: entityClass - " + entityClass + ", actualTypeArguments - " + actualTypeArguments + ", typeArguments - " + typeArguments);
 
         String refName = toUnderscore(entityClass.getSimpleName());
 
