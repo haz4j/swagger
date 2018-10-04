@@ -198,16 +198,16 @@ public class JsonGenerator {
                         Type rawType = parameterizedType.getRawType();
 
                         List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
-                        Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
+                        Map<String, String> genericTypeArgs = toTypesMap(typeParams, typeWrapper);
 
-                        return createPropertyFor((Class) rawType, typesMap);
+                        return createPropertyFor((Class) rawType, genericTypeArgs);
                     } else {
-                        return createPropertyFor(type, null);
+                        return createPropertyFor(type, new HashMap<>());
                     }
                 });
     }
 
-    private void createEntityDefinition(Class<?> entityClass, /*@NotNull*/ Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
+    private void createEntityDefinition(Class<?> entityClass, @NotNull Map<String, String> genericTypeArgs, Map<TypeVariable<?>, Type> typeArguments) {
         log.debug("createParamFromMethodParameter: entityClass - " + entityClass + ", genericTypeArgs - " + genericTypeArgs + ", typeArguments - " + genericTypeArgs);
 
         String refName = getRefName(entityClass, genericTypeArgs, typeArguments);
@@ -242,8 +242,8 @@ public class JsonGenerator {
                     .orElseGet(() -> {
                         Optional<Class> realType = ReflectionUtils.getRealType(field, genericTypeArgs);
 
-                        return realType.map(rt -> createPropertyFor(rt, null))
-                                .orElseGet(() -> createPropertyFor(type, null));
+                        return realType.map(rt -> createPropertyFor(rt, new HashMap<>()))
+                                .orElseGet(() -> createPropertyFor(type, new HashMap<>()));
                     });
 
             properties.set(fieldName, node);
@@ -370,9 +370,9 @@ public class JsonGenerator {
         } else {
             List<TypeVariable<?>> typeParams = ReflectionUtils.getTypeParams(type);
 
-            Map<String, String> typesMap = toTypesMap(typeParams, typeWrapper);
+            Map<String, String> genericTypeArgs = toTypesMap(typeParams, typeWrapper);
 
-            valueNode = createPropertyFor(type, typesMap);
+            valueNode = createPropertyFor(type, genericTypeArgs);
         }
         return valueNode;
     }

@@ -77,7 +77,7 @@ public class ReflectionUtils {
     }
 
     @SneakyThrows
-    public static Optional<Class> getRealType(Field field, /*@NotNull */Map<String, String> genericTypeArgs) {
+    public static Optional<Class> getRealType(Field field, @NotNull Map<String, String> genericTypeArgs) {
         log.debug("getRealType: field - " + field + ", genericTypeArgs - " + genericTypeArgs);
         // signature = TR;
         Optional<String> signature = ReflectionUtils.getSignature(field);
