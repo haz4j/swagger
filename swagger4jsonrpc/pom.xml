@@ -38,7 +38,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mvn.compiler.plugin.version>3.5.1</mvn.compiler.plugin.version>
         <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
-        <swagger.version>1.5.10</swagger.version>
         <slf4j.version>1.7.25</slf4j.version>
         <jsonrpc4j.version>1.4.6</jsonrpc4j.version>
         <lombok.version>1.16.16</lombok.version>
@@ -74,12 +73,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>4.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>${swagger.version}</version>
         </dependency>
 
         <dependency>

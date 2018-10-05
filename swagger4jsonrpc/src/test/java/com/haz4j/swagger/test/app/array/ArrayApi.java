@@ -5,9 +5,8 @@ import com.googlecode.jsonrpc4j.JsonRpcError;
 import com.googlecode.jsonrpc4j.JsonRpcErrors;
 import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-
+import com.haz4j.swagger.annotation.Api;
+import com.haz4j.swagger.annotation.ApiOperation;
 
 @JsonRpcService("/v1/array")
 @Api(tags = "arrays", value = "Api arrays")

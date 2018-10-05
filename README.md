@@ -15,18 +15,11 @@ pom.xml: add swagger annotations and swagger4jsonrpc
         <!--spring boot, jsonrpc4j, etc-->
         ...
 
-        <!--add this to use annotation @Api-->
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>1.5.21</version>
-        </dependency>
-
         <!--add this to generate swagger-ui.html page-->
         <dependency>
             <groupId>com.github.haz4j</groupId>
             <artifactId>swagger4jsonrpc</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
         </dependency>
     </dependencies>
 ```

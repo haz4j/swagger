@@ -1,7 +1,7 @@
 package com.haz4j.swagger;
 
+import com.haz4j.swagger.annotation.Api;
 import com.haz4j.swagger.structure.ApiStruct;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;

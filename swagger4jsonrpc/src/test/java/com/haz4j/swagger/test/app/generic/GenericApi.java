@@ -2,7 +2,8 @@ package com.haz4j.swagger.test.app.generic;
 
 import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcService;
-import io.swagger.annotations.Api;
+import com.haz4j.swagger.annotation.Api;
+
 
 import java.util.List;
 import java.util.Map;

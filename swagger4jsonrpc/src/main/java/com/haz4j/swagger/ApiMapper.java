@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 public class ApiMapper {
 
+    //TODO: везде добавить валидацию всего, а то не смогу понять в чем проблема
+
     public static ApiStruct toStruct(List<Class> classes) {
         List<ClassStruct> structs = classes.stream()
                 .map(clazz -> toStruct(clazz))
